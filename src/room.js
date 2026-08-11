@@ -30,6 +30,11 @@ let roomState = {
   lastUpdatedAt: Date.now()
 };
 
+let serverTimeOffset = 0;
+function getServerTime() {
+  return Date.now() + serverTimeOffset;
+}
+
 // --- Auth Check ---
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -108,7 +113,7 @@ function syncPlayerState() {
   if (lastLoadedVideoId !== currentVideo.videoId) {
     let startSeconds = 0;
     if (roomState.isPlaying) {
-      const drift = (Date.now() - roomState.lastUpdatedAt) / 1000;
+      const drift = (getServerTime() - roomState.lastUpdatedAt) / 1000;
       startSeconds = roomState.seekPosition + drift;
     }
     
@@ -121,11 +126,11 @@ function syncPlayerState() {
   } else {
     // Song is already loaded, just adjust time/state if needed
     if (roomState.isPlaying) {
-      const drift = (Date.now() - roomState.lastUpdatedAt) / 1000;
+      const drift = (getServerTime() - roomState.lastUpdatedAt) / 1000;
       const targetTime = roomState.seekPosition + drift;
       
-      // Only seek if we are out of sync by > 2 seconds
-      if (Math.abs((player.getCurrentTime() || 0) - targetTime) > 2) {
+      // Only seek if we are out of sync by > 0.8 seconds
+      if (Math.abs((player.getCurrentTime() || 0) - targetTime) > 0.8) {
         player.seekTo(targetTime, true);
       }
       if (player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) {
@@ -142,6 +147,12 @@ function syncPlayerState() {
 }
 
 function setupFirebaseListeners() {
+  // Time Sync
+  const offsetRef = ref(database, ".info/serverTimeOffset");
+  onValue(offsetRef, (snapshot) => {
+    serverTimeOffset = snapshot.val() || 0;
+  });
+
   // State Sync (RADIO SYNC)
   const stateRef = ref(database, `rooms/${currentRoom}/state`);
   onValue(stateRef, (snapshot) => {
@@ -504,7 +515,7 @@ document.getElementById('playPauseBtn').addEventListener('click', () => {
     nowPlayingIndex: nowPlayingIndex,
     isPlaying: !roomState.isPlaying,
     seekPosition: player.getCurrentTime() || 0,
-    lastUpdatedAt: Date.now()
+    lastUpdatedAt: getServerTime()
   });
 });
 
@@ -517,12 +528,12 @@ document.getElementById('prevBtn')?.addEventListener('click', () => {
   if (cur > 3 || nowPlayingIndex === 0) {
     // Restart current song
     const stateRef = ref(database, `rooms/${currentRoom}/state`);
-    set(stateRef, { nowPlayingIndex, isPlaying: roomState.isPlaying, seekPosition: 0, lastUpdatedAt: Date.now() });
+    set(stateRef, { nowPlayingIndex, isPlaying: roomState.isPlaying, seekPosition: 0, lastUpdatedAt: getServerTime() });
     player.seekTo(0, true);
   } else {
     // Go to previous
     const stateRef = ref(database, `rooms/${currentRoom}/state`);
-    set(stateRef, { nowPlayingIndex: nowPlayingIndex - 1, isPlaying: true, seekPosition: 0, lastUpdatedAt: Date.now() });
+    set(stateRef, { nowPlayingIndex: nowPlayingIndex - 1, isPlaying: true, seekPosition: 0, lastUpdatedAt: getServerTime() });
   }
 });
 
@@ -539,7 +550,7 @@ function playNext() {
     nowPlayingIndex: nextIndex,
     isPlaying: true,
     seekPosition: 0,
-    lastUpdatedAt: Date.now()
+    lastUpdatedAt: getServerTime()
   });
 }
 
@@ -704,7 +715,7 @@ function addToQueueAndPlay(song) {
       nowPlayingIndex: 0,
       isPlaying: true,
       seekPosition: 0,
-      lastUpdatedAt: Date.now()
+      lastUpdatedAt: getServerTime()
     });
   }
   
