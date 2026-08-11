@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIBE — Listen Together</title>
+    <meta name="description" content="Listen together. Anywhere. Create a room and invite your friends." />
+    <link rel="stylesheet" href="/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="landing-container">
+      <div class="glass-blobs">
+        <div class="blob blob-purple"></div>
+        <div class="blob blob-pink"></div>
+        <div class="blob blob-cyan"></div>
+      </div>
+
+      <header class="landing-header">
+        <div class="logo">VIBE<span>.</span></div>
+      </header>
+
+      <!-- Landing View (logged out) -->
+      <div id="landingView">
+        <section class="hero">
+          <p class="hero-eyebrow">🎵 Synchronized Listening</p>
+          <h2 class="hero-title">Music is better<br><span class="accent-text">together.</span></h2>
+          <p class="hero-subtitle">Create a room, queue songs from YouTube, and listen in perfect sync with anyone, anywhere.</p>
+
+          <div class="cta-buttons" id="authSection">
+            <button id="signInBtn" class="btn btn-primary" style="width: 100%;">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="">
+              Continue with Google
+            </button>
+          </div>
+
+          <p class="no-setup" id="noSetupText">Free · No downloads · No setup</p>
+        </section>
+
+        <section class="how-it-works">
+          <h3>How it works</h3>
+          <div class="steps">
+            <div class="step">
+              <span class="step-num">01</span>
+              <h4>Create</h4>
+              <p>Start a room instantly</p>
+            </div>
+            <div class="step">
+              <span class="step-num">02</span>
+              <h4>Invite</h4>
+              <p>Share the room code</p>
+            </div>
+            <div class="step">
+              <span class="step-num">03</span>
+              <h4>Vibe</h4>
+              <p>Listen in real-time sync</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Dashboard View (logged in) -->
+      <div id="dashboardView" class="hidden">
+        <div class="dashboard-greeting">
+          <p class="eyebrow">Welcome back</p>
+          <h2 id="welcomeText">Hey, <span class="accent-text">User</span> 👋</h2>
+        </div>
+
+        <div class="dashboard-actions" id="actionSection">
+          <button id="createRoomBtn" class="action-card">
+            <div class="action-card-icon create">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+            </div>
+            <div class="action-card-text">
+              <strong>Create a Room</strong>
+              <span>Start a new listening session</span>
+            </div>
+            <span class="action-card-arrow">›</span>
+          </button>
+          <button id="joinRoomBtn" class="action-card">
+            <div class="action-card-icon join">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+            </div>
+            <div class="action-card-text">
+              <strong>Join a Room</strong>
+              <span>Enter a room code to join</span>
+            </div>
+            <span class="action-card-arrow">›</span>
+          </button>
+        </div>
+
+        <div id="homePlaylistSection">
+          <div class="playlist-section-header">
+            <h3>Your Playlist</h3>
+          </div>
+          <div class="queue-list" id="homePlaylistContainer">
+            <!-- Playlist injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Join Room Modal -->
+    <div id="joinModal" class="modal hidden">
+      <div class="modal-content">
+        <button class="close-btn" id="closeModal">✕</button>
+        <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1.5rem;">Join a Room</h2>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <input type="text" id="roomCodeInput" placeholder="Room code (e.g. 7XK92)" style="
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            text-align: center;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: border-color 0.2s, background 0.2s;
+          " onfocus="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.background='rgba(255,255,255,0.08)';" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.06)';">
+          <input type="text" id="nicknameInput" class="hidden" />
+          <button id="submitJoinBtn" class="btn btn-primary" style="width:100%; padding: 16px; border-radius: 18px; font-size: 1rem;">Join Room →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container for Invites -->
+    <div id="toastContainer" style="
+      position: fixed; top: 20px; right: 20px; z-index: 1000;
+      display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+    "></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
