@@ -1188,7 +1188,7 @@ function spawnEmoji(emoji) {
   el.style.setProperty('--duration', `${2.4 + Math.random() * 1.2}s`);
   el.style.left   = `${15 + Math.random() * 70}%`;
   el.style.bottom = `${isFullscreen ? 30 : 22}%`;
-  el.style.fontSize = `${2 + Math.random() * 1.2}rem`;
+  el.style.fontSize = `${1.2 + Math.random() * 0.4}rem`;
   document.body.appendChild(el);
   el.addEventListener('animationend', () => el.remove());
 }

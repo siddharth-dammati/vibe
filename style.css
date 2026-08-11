@@ -877,21 +877,28 @@ input:focus {
 }
 
 .reaction-btn {
-  width: 46px; height: 46px; border-radius: 50%;
+  width: auto; height: 46px; border-radius: 23px;
+  padding: 0 16px;
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.12);
   backdrop-filter: var(--blur-sm);
-  font-size: 1.35rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.18s var(--ease-spring), background 0.15s;
+  font-size: 0.9rem; font-weight: 600; color: white;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+  white-space: nowrap;
 }
-.reaction-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.18); }
-.reaction-btn:active { transform: scale(0.88); }
+.reaction-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.08); }
+.reaction-btn:active { transform: scale(0.95); }
 
 /* Floating emoji reactions */
 .floating-emoji {
   position: fixed;
-  font-size: 2.2rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  white-space: nowrap;
   z-index: 300;
   pointer-events: none;
   animation: floatUp var(--duration, 2.8s) var(--ease-out-expo) forwards;
