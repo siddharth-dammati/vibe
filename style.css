@@ -1192,6 +1192,10 @@ body.video-mode-active #yt-viewport-wrapper {
 }
 
 body.video-mode-active #youtube-player {
+  opacity: 1 !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
   width: 100% !important;
   height: 100% !important;
   /* Zoom by ~1.34x to crop top and bottom black bars of a 2.35:1 video inside a 16:9 iframe */
