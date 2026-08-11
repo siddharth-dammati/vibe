@@ -445,13 +445,39 @@ let isPlayerReady = false;
 
 // --- Silent Audio Hack ---
 // Keeps the audio context alive in the background on mobile browsers
-let silentAudio = null;
+let isSilentAudioInitialized = false;
 function initSilentAudio() {
-  if (silentAudio) return;
-  silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-  silentAudio.loop = true;
-  silentAudio.play().catch(e => console.log('Silent audio blocked', e));
+  if (isSilentAudioInitialized) return;
+  
+  try {
+    // 1. HTML5 Audio tag hack
+    const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+    silentAudio.loop = true;
+    silentAudio.play().then(() => {
+      isSilentAudioInitialized = true;
+      document.removeEventListener('click', initSilentAudio);
+      document.removeEventListener('touchstart', initSilentAudio);
+    }).catch(e => console.log('Silent audio blocked', e));
+
+    // 2. Web Audio API hack
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0; // completely silent
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(0);
+    }
+  } catch(err) {
+    console.error(err);
+  }
 }
+
+// Bind to first user interaction so mobile Safari accepts it
+document.addEventListener('click', initSilentAudio);
+document.addEventListener('touchstart', initSilentAudio);
 
 function initYouTubePlayer() {
   player = new YT.Player('youtube-player', {
