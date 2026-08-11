@@ -182,9 +182,48 @@ function setupFirebaseListeners() {
 
   // Chat Sync — single listener, updates both room chat and fullscreen chat overlay
   const chatRef = ref(database, `rooms/${currentRoom}/chat`);
+  let lastProcessedChatKeys = new Set();
+  let isInitialChatLoad = true;
+  
   onValue(chatRef, (snapshot) => {
     const data = snapshot.val();
     renderChatMessages(data);
+    
+    // Render inline chat in fullscreen player
+    if (data) {
+      const fsInlineChat = document.getElementById('fsInlineChat');
+      Object.entries(data).forEach(([key, msg]) => {
+        if (!lastProcessedChatKeys.has(key)) {
+          lastProcessedChatKeys.add(key);
+          if (!isInitialChatLoad && fsInlineChat) {
+            const el = document.createElement('div');
+            el.className = 'fs-inline-msg';
+            
+            const senderSpan = document.createElement('span');
+            senderSpan.className = 'sender';
+            senderSpan.textContent = msg.user;
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'text';
+            textSpan.textContent = msg.text;
+            
+            el.appendChild(senderSpan);
+            el.appendChild(textSpan);
+            fsInlineChat.appendChild(el);
+            
+            while (fsInlineChat.children.length > 6) {
+              fsInlineChat.removeChild(fsInlineChat.firstChild);
+            }
+            
+            setTimeout(() => {
+              el.classList.add('fade-out');
+              setTimeout(() => { if (el.parentNode) el.remove(); }, 600);
+            }, 3500);
+          }
+        }
+      });
+    }
+    isInitialChatLoad = false;
   });
 
   // Reactions Sync — receive emoji reactions from all users
