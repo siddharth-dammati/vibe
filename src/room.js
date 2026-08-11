@@ -443,6 +443,16 @@ function loadFriends() {
 let player;
 let isPlayerReady = false;
 
+// --- Silent Audio Hack ---
+// Keeps the audio context alive in the background on mobile browsers
+let silentAudio = null;
+function initSilentAudio() {
+  if (silentAudio) return;
+  silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+  silentAudio.loop = true;
+  silentAudio.play().catch(e => console.log('Silent audio blocked', e));
+}
+
 function initYouTubePlayer() {
   player = new YT.Player('youtube-player', {
     height: '200',
@@ -480,6 +490,9 @@ function onPlayerStateChange(event) {
   const thumb = document.getElementById('playerThumb');
 
   if (event.data == YT.PlayerState.PLAYING) {
+    initSilentAudio();
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+    
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.pause;
     if (thumb) thumb.classList.remove('paused');
     // Sync fullscreen UI if open
@@ -487,6 +500,8 @@ function onPlayerStateChange(event) {
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
   } else {
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+    
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.play;
     if (thumb) thumb.classList.add('paused');
     if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>`;
@@ -570,6 +585,24 @@ function updateMiniPlayerUI() {
   if (typeof isFullscreen !== 'undefined' && isFullscreen) {
     // updateFullscreenUI will be called after it's defined
     setTimeout(() => { if (typeof updateFullscreenUI === 'function') updateFullscreenUI(); }, 0);
+  }
+
+  // Hook into OS Media Controls (Lock Screen / Control Center)
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentSong.title,
+      artist: currentSong.artist || 'VIBE Room',
+      artwork: [
+        { src: `https://i.ytimg.com/vi/${currentSong.videoId}/default.jpg`, sizes: '120x90', type: 'image/jpeg' },
+        { src: `https://i.ytimg.com/vi/${currentSong.videoId}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' }
+      ]
+    });
+    
+    // Bind OS media buttons to our player controls
+    navigator.mediaSession.setActionHandler('play', () => document.getElementById('playPauseBtn').click());
+    navigator.mediaSession.setActionHandler('pause', () => document.getElementById('playPauseBtn').click());
+    navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+    navigator.mediaSession.setActionHandler('previoustrack', () => document.getElementById('prevBtn')?.click());
   }
 }
 
