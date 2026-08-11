@@ -38,8 +38,8 @@ export async function joinVoice(room, uid, onParticipantChange) {
   const participantsRef = ref(database, `rooms/${roomId}/voice_participants`);
   onChildAdded(participantsRef, snapshot => {
     const targetUid = snapshot.key;
-    if (targetUid !== currentUid) {
-      // Someone joined, initiate connection
+    // Tie-breaker to prevent glare: only the user with the strictly greater UID initiates the offer
+    if (targetUid !== currentUid && currentUid > targetUid) {
       createOffer(targetUid);
     }
   });
@@ -67,7 +67,8 @@ export async function joinVoice(room, uid, onParticipantChange) {
   const offersRef = ref(database, `rooms/${roomId}/webrtc/offers/${currentUid}`);
   onChildAdded(offersRef, snapshot => {
     const data = snapshot.val();
-    handleOffer(data.sender, data.offer, snapshot.key);
+    handleOffer(data.sender, data.offer);
+    remove(ref(database, `rooms/${roomId}/webrtc/offers/${currentUid}/${snapshot.key}`)); // cleanup
   });
 
   // Listen for incoming answers
@@ -75,6 +76,7 @@ export async function joinVoice(room, uid, onParticipantChange) {
   onChildAdded(answersRef, snapshot => {
     const data = snapshot.val();
     handleAnswer(data.sender, data.answer);
+    remove(ref(database, `rooms/${roomId}/webrtc/answers/${currentUid}/${snapshot.key}`)); // cleanup
   });
 
   // Listen for ICE candidates
@@ -82,6 +84,7 @@ export async function joinVoice(room, uid, onParticipantChange) {
   onChildAdded(candidatesRef, snapshot => {
     const data = snapshot.val();
     handleCandidate(data.sender, data.candidate);
+    remove(ref(database, `rooms/${roomId}/webrtc/candidates/${currentUid}/${snapshot.key}`)); // cleanup
   });
 
   return true;
@@ -136,7 +139,9 @@ async function createOffer(targetUid) {
   });
 }
 
-async function handleOffer(senderUid, offerSdp, offerKey) {
+let candidateQueues = {};
+
+async function handleOffer(senderUid, offerSdp) {
   const pc = createPeerConnection(senderUid);
   await pc.setRemoteDescription(new RTCSessionDescription(offerSdp));
   
@@ -148,19 +153,35 @@ async function handleOffer(senderUid, offerSdp, offerKey) {
     sender: currentUid,
     answer: { type: answer.type, sdp: answer.sdp }
   });
+  
+  await flushCandidates(senderUid);
 }
 
 async function handleAnswer(senderUid, answerSdp) {
   const pc = peerConnections[senderUid];
   if (pc) {
     await pc.setRemoteDescription(new RTCSessionDescription(answerSdp));
+    await flushCandidates(senderUid);
   }
 }
 
 async function handleCandidate(senderUid, candidate) {
   const pc = peerConnections[senderUid];
-  if (pc) {
-    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+  if (pc && pc.remoteDescription) {
+    await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error(e));
+  } else {
+    if (!candidateQueues[senderUid]) candidateQueues[senderUid] = [];
+    candidateQueues[senderUid].push(candidate);
+  }
+}
+
+async function flushCandidates(senderUid) {
+  const pc = peerConnections[senderUid];
+  if (pc && candidateQueues[senderUid]) {
+    for (let c of candidateQueues[senderUid]) {
+      await pc.addIceCandidate(new RTCIceCandidate(c)).catch(e => console.error(e));
+    }
+    candidateQueues[senderUid] = [];
   }
 }
 
