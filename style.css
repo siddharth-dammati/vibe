@@ -1252,9 +1252,9 @@ body.video-mode-active #yt-viewport-wrapper {
   opacity: 1 !important;
   z-index: 201 !important;
   width: 90vw !important;
-  height: 50.625vw !important; /* 16:9 aspect ratio container */
+  height: 67.5vw !important; /* 4:3 aspect ratio container */
   max-width: 600px !important;
-  max-height: 337.5px !important;
+  max-height: 450px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   pointer-events: auto !important;
   /* Top value will be overridden by JS to match artwork position, but fallback to 35% if JS fails */
@@ -1274,7 +1274,7 @@ body.video-mode-active #youtube-player {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  /* Zoom by ~1.34x to crop top and bottom black bars of a 2.35:1 video inside a 16:9 iframe */
-  transform: scale(1.34);
+  /* Zoom by ~1.77x to completely fill a 4:3 box with a 2.35:1 cinema ratio video */
+  transform: scale(1.77);
   transform-origin: center center;
 }
