@@ -445,12 +445,13 @@ let isPlayerReady = false;
 
 function initYouTubePlayer() {
   player = new YT.Player('youtube-player', {
-    height: '0',
-    width: '0',
+    height: '200',
+    width: '200',
     videoId: 'dQw4w9WgXcQ', // Dummy fallback
     playerVars: {
       'playsinline': 1,
       'controls': 0,
+      'fs': 0
     },
     events: {
       'onReady': onPlayerReady,
