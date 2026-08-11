@@ -981,7 +981,6 @@ const fsChatToggle     = document.getElementById('fsChatToggle');
 const fsChatCloseBtn   = document.getElementById('fsChatCloseBtn');
 const fsToggleSong     = document.getElementById('fsToggleSong');
 const fsToggleVideo    = document.getElementById('fsToggleVideo');
-const fullscreenPlayer = document.getElementById('fullscreenPlayer');
 const fsChatMessages   = document.getElementById('fsChatMessages');
 const fsChatInput      = document.getElementById('fsChatInput');
 const fsSendChatBtn    = document.getElementById('fsSendChatBtn');
