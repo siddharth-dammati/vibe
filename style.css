@@ -918,11 +918,17 @@ input:focus {
   justify-content: flex-end;
   gap: 8px;
   overflow: hidden;
-  z-index: 15;
+  z-index: 205; /* Must be higher than #yt-viewport-wrapper (201) */
   pointer-events: none; /* Let clicks pass through to video */
   /* Fade out at the top */
   mask-image: linear-gradient(to top, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
   -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+body.fullscreen-open .fs-inline-chat {
+  opacity: 1;
 }
 
 .fs-inline-msg {
@@ -1253,6 +1259,12 @@ body.video-mode-active #yt-viewport-wrapper {
   pointer-events: auto !important;
   /* Top value will be overridden by JS to match artwork position, but fallback to 35% if JS fails */
   top: 35% !important; 
+}
+
+/* Hide video visually so it doesn't overlap the full screen chat overlay */
+body.chat-overlay-open #yt-viewport-wrapper {
+  opacity: 0.001 !important;
+  pointer-events: none !important;
 }
 
 body.video-mode-active #youtube-player {

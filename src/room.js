@@ -1061,6 +1061,7 @@ document.getElementById('miniPlayer').addEventListener('click', (e) => {
 
 function openFullscreen() {
   isFullscreen = true;
+  document.body.classList.add('fullscreen-open');
   fullscreenPlayer.classList.add('open');
   updateFullscreenUI();
   updateVideoPosition();
@@ -1069,8 +1070,10 @@ function openFullscreen() {
 
 function closeFullscreen() {
   isFullscreen = false;
+  document.body.classList.remove('fullscreen-open');
   fullscreenPlayer.classList.remove('open');
   fsChatOverlay.classList.remove('open');
+  document.body.classList.remove('chat-overlay-open');
   if (fsToggleSong) fsToggleSong.click();
   stopFsProgressUpdater();
 }
@@ -1161,6 +1164,8 @@ function syncAndUpdateFS() {
 // FS Chat overlay toggle
 fsChatToggle.addEventListener('click', () => {
   fsChatOverlay.classList.toggle('open');
+  document.body.classList.toggle('chat-overlay-open', fsChatOverlay.classList.contains('open'));
+  
   if (fsChatOverlay.classList.contains('open')) {
     // Chat is auto-synced by the central Firebase listener — just focus input
     setTimeout(() => fsChatInput.focus(), 400);
@@ -1202,6 +1207,7 @@ if (fsToggleSong && fsToggleVideo) {
 
 fsChatCloseBtn.addEventListener('click', () => {
   fsChatOverlay.classList.remove('open');
+  document.body.classList.remove('chat-overlay-open');
 });
 
 fsSendChatBtn.addEventListener('click', () => {
