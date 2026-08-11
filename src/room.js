@@ -979,6 +979,9 @@ const fsLikeBtn        = document.getElementById('fsLikeBtn');
 const fsChatOverlay    = document.getElementById('fsChatOverlay');
 const fsChatToggle     = document.getElementById('fsChatToggle');
 const fsChatCloseBtn   = document.getElementById('fsChatCloseBtn');
+const fsToggleSong     = document.getElementById('fsToggleSong');
+const fsToggleVideo    = document.getElementById('fsToggleVideo');
+const fullscreenPlayer = document.getElementById('fullscreenPlayer');
 const fsChatMessages   = document.getElementById('fsChatMessages');
 const fsChatInput      = document.getElementById('fsChatInput');
 const fsSendChatBtn    = document.getElementById('fsSendChatBtn');
@@ -1003,6 +1006,7 @@ function closeFullscreen() {
   isFullscreen = false;
   fullscreenPlayer.classList.remove('open');
   fsChatOverlay.classList.remove('open');
+  if (fsToggleSong) fsToggleSong.click();
   stopFsProgressUpdater();
 }
 
@@ -1097,6 +1101,23 @@ fsChatToggle.addEventListener('click', () => {
     setTimeout(() => fsChatInput.focus(), 400);
   }
 });
+
+// Audio / Video Toggle
+if (fsToggleSong && fsToggleVideo) {
+  fsToggleSong.addEventListener('click', () => {
+    fsToggleSong.classList.add('active');
+    fsToggleVideo.classList.remove('active');
+    fullscreenPlayer.classList.remove('video-mode-active');
+    document.body.classList.remove('video-mode-active');
+  });
+
+  fsToggleVideo.addEventListener('click', () => {
+    fsToggleVideo.classList.add('active');
+    fsToggleSong.classList.remove('active');
+    fullscreenPlayer.classList.add('video-mode-active');
+    document.body.classList.add('video-mode-active');
+  });
+}
 
 fsChatCloseBtn.addEventListener('click', () => {
   fsChatOverlay.classList.remove('open');

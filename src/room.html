@@ -26,10 +26,13 @@
 
       <!-- Top Header -->
       <div class="fs-header">
-        <button class="fs-back-btn" id="fsCloseBtn" title="Minimise">▾</button>
-        <div class="fs-title-center">
-          <p>Playing from</p>
-          <h4 id="fsRoomLabel">VIBE ROOM</h4>
+        <button class="fs-back-btn" id="fsCloseBtn" title="Minimise">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="fs-toggle-container" id="fsToggleContainer">
+          <div class="fs-toggle-bg" id="fsToggleBg"></div>
+          <button class="fs-toggle-btn active" id="fsToggleSong">Song</button>
+          <button class="fs-toggle-btn" id="fsToggleVideo">Video</button>
         </div>
         <button class="fs-menu-btn" id="fsChatToggle" title="Live Chat">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>

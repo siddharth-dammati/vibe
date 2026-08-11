@@ -1121,3 +1121,71 @@ input:focus {
   position: absolute; width: 0; height: 0;
   opacity: 0; pointer-events: none;
 }
+
+/* ================================================================
+   AUDIO / VIDEO TOGGLE
+   ================================================================ */
+.fs-toggle-container {
+  display: flex;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 99px;
+  padding: 4px;
+  width: max-content;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fs-toggle-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fullscreen-player.video-mode-active .fs-toggle-bg {
+  transform: translateX(100%);
+}
+
+.fs-toggle-btn {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 20px;
+  cursor: pointer;
+  border-radius: 99px;
+  transition: color 0.3s;
+}
+
+.fs-toggle-btn.active {
+  color: white;
+}
+
+/* Video Mode Overrides */
+body.video-mode-active .fs-art-container {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.video-mode-active #youtube-player {
+  opacity: 1 !important;
+  z-index: 201 !important;
+  width: 90vw !important;
+  height: 50.625vw !important; /* 16:9 aspect ratio */
+  max-width: 600px !important;
+  max-height: 337.5px !important;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: auto !important;
+}
