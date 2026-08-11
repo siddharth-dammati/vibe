@@ -1,4 +1,5 @@
 import { auth, database, onAuthStateChanged, ref, set, push, onValue, onDisconnect, remove, get } from './firebase.js';
+import { joinVoice, leaveVoice, toggleMute } from './voice.js';
 
 const UI_ICONS = {
   play: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>`,
@@ -19,6 +20,8 @@ let myPlaylist = [];
 let nowPlayingIndex = 0;
 let myFriends = [];
 let activeParticipants = {};
+let voiceParticipants = {}; // Track who is in voice chat
+let inVoiceChat = false;
 
 let roomState = {
   nowPlayingIndex: 0,
@@ -322,11 +325,22 @@ function renderPeopleList() {
       btnHtml = `<button class="btn btn-primary add-friend-btn" style="padding: 6px 12px; font-size: 0.7rem;">ADD FRIEND</button>`;
     }
     
+    // Check if in voice chat
+    let voiceIcon = '';
+    if (voiceParticipants[uid]) {
+      const p = voiceParticipants[uid];
+      if (p.isMuted) {
+        voiceIcon = `<span style="color:#ff2d55; font-size: 1rem; margin-left: 8px;">🔇</span>`;
+      } else {
+        voiceIcon = `<span style="color:#34d399; font-size: 1.1rem; margin-left: 8px; filter: drop-shadow(0 0 8px rgba(52,211,153,0.6));">🔊</span>`;
+      }
+    }
+
     card.innerHTML = `
-      <img src="${person.photoURL || 'https://via.placeholder.com/40'}" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-      <div class="song-details" style="flex-grow: 1;">
-        <div class="song-title">${person.name}</div>
-        <div class="song-artist">${person.status}</div>
+      <img src="${person.photoURL || 'https://via.placeholder.com/50'}" class="song-thumb" alt="User">
+      <div class="song-details">
+        <div class="song-title">${person.name} ${isMe ? '(You)' : ''}${voiceIcon}</div>
+        <div class="song-artist">${person.status || 'Active'}</div>
       </div>
       ${btnHtml}
     `;
@@ -598,6 +612,67 @@ const searchInput = document.getElementById('searchInput');
 const doSearchBtn = document.getElementById('doSearchBtn');
 const searchResults = document.getElementById('searchResults');
 const playlistResults = document.getElementById('playlistResults');
+
+const joinVoiceBtn = document.getElementById('joinVoiceBtn');
+const leaveVoiceBtn = document.getElementById('leaveVoiceBtn');
+const voiceMuteBtn = document.getElementById('voiceMuteBtn');
+
+joinVoiceBtn?.addEventListener('click', async () => {
+  if (!currentUser) return;
+  joinVoiceBtn.disabled = true;
+  joinVoiceBtn.innerHTML = 'Connecting...';
+  
+  const success = await joinVoice(currentRoom, currentUser.uid, (uid, data) => {
+    if (!data) delete voiceParticipants[uid];
+    else voiceParticipants[uid] = data;
+    renderPeopleList();
+  });
+  
+  if (success) {
+    inVoiceChat = true;
+    joinVoiceBtn.classList.add('hidden');
+    leaveVoiceBtn.classList.remove('hidden');
+    voiceMuteBtn.classList.remove('hidden');
+    // Duck audio to 50%
+    if (player && player.setVolume) player.setVolume(50);
+  } else {
+    joinVoiceBtn.disabled = false;
+    joinVoiceBtn.innerHTML = 'Join Voice';
+  }
+});
+
+leaveVoiceBtn?.addEventListener('click', () => {
+  leaveVoice();
+  inVoiceChat = false;
+  joinVoiceBtn.classList.remove('hidden');
+  joinVoiceBtn.disabled = false;
+  joinVoiceBtn.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+    Join Voice
+  `;
+  leaveVoiceBtn.classList.add('hidden');
+  voiceMuteBtn.classList.add('hidden');
+  
+  // Restore volume
+  if (player && player.setVolume) player.setVolume(100);
+  
+  voiceParticipants = {};
+  renderPeopleList();
+});
+
+voiceMuteBtn?.addEventListener('click', () => {
+  const isMuted = toggleMute();
+  const micIcon = document.getElementById('micIcon');
+  if (isMuted) {
+    voiceMuteBtn.style.background = 'rgba(255,45,85,0.2)';
+    voiceMuteBtn.style.color = '#ff2d55';
+    micIcon.innerHTML = `<line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="22"></line>`;
+  } else {
+    voiceMuteBtn.style.background = 'rgba(255,255,255,0.15)';
+    voiceMuteBtn.style.color = 'inherit';
+    micIcon.innerHTML = `<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>`;
+  }
+});
 
 const YOUTUBE_API_KEY = 'AIzaSyDuz95QvhC2iLVXanoH1abBY7hbXyyYol8'; 
 

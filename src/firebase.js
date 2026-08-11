@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get } from "firebase/database";
+import { getDatabase, ref, set, push, onValue, onChildAdded, onDisconnect, remove, get } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBwIPxrztDeaeJDMQ4FcTSDOYtPqaVXvTY",
@@ -32,6 +32,7 @@ export {
   set,
   push,
   onValue,
+  onChildAdded,
   onDisconnect,
   remove,
   get
