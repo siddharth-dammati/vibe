@@ -1024,6 +1024,7 @@ function openFullscreen() {
   isFullscreen = true;
   fullscreenPlayer.classList.add('open');
   updateFullscreenUI();
+  updateVideoPosition();
   startFsProgressUpdater();
 }
 
@@ -1128,12 +1129,27 @@ fsChatToggle.addEventListener('click', () => {
 });
 
 // Audio / Video Toggle
+const ytViewportWrapper = document.getElementById('yt-viewport-wrapper');
+
+function updateVideoPosition() {
+  if (document.body.classList.contains('video-mode-active') && isFullscreen) {
+    const artRect = fsArtwork.getBoundingClientRect();
+    if (artRect.height > 0 && ytViewportWrapper) {
+      ytViewportWrapper.style.top = (artRect.top + artRect.height / 2) + 'px';
+    }
+  } else if (ytViewportWrapper) {
+    ytViewportWrapper.style.top = '50%';
+  }
+}
+window.addEventListener('resize', updateVideoPosition);
+
 if (fsToggleSong && fsToggleVideo) {
   fsToggleSong.addEventListener('click', () => {
     fsToggleSong.classList.add('active');
     fsToggleVideo.classList.remove('active');
     fullscreenPlayer.classList.remove('video-mode-active');
     document.body.classList.remove('video-mode-active');
+    updateVideoPosition();
   });
 
   fsToggleVideo.addEventListener('click', () => {
@@ -1141,6 +1157,7 @@ if (fsToggleSong && fsToggleVideo) {
     fsToggleSong.classList.remove('active');
     fullscreenPlayer.classList.add('video-mode-active');
     document.body.classList.add('video-mode-active');
+    updateVideoPosition();
   });
 }
 
