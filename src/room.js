@@ -455,8 +455,8 @@ function initSilentAudio() {
 
 function initYouTubePlayer() {
   player = new YT.Player('youtube-player', {
-    height: '200',
-    width: '200',
+    height: '300',
+    width: '300',
     videoId: 'dQw4w9WgXcQ', // Dummy fallback
     playerVars: {
       'playsinline': 1,

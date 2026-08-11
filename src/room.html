@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Hidden YT player (sized and moved offscreen for mobile background play support) -->
-    <div id="youtube-player" style="position: absolute; top: -9999px; left: -9999px; width: 200px; height: 200px; opacity: 0.01; pointer-events: none;"></div>
+    <!-- Hidden YT player (placed behind UI but IN the viewport to prevent mobile throttling) -->
+    <div id="youtube-player" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999;"></div>
 
     <!-- ==========================================
          FULL SCREEN PLAYER
