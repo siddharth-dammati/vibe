@@ -499,7 +499,13 @@ function onPlayerStateChange(event) {
     if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
-  } else {
+  } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
+    // Hack: If browser auto-paused the video because the tab went to background, force it back!
+    if (document.hidden && roomState.isPlaying) {
+      player.playVideo();
+      return;
+    }
+
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
     
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.play;
