@@ -162,13 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     joinModal.classList.remove('hidden');
   });
 
-  const joinRoomBtn2 = document.getElementById('joinRoomBtn2');
-  if (joinRoomBtn2) {
-    joinRoomBtn2.addEventListener('click', () => {
-      joinModal.classList.remove('hidden');
-    });
-  }
-
   closeModal.addEventListener('click', () => {
     joinModal.classList.add('hidden');
   });
