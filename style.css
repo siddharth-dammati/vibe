@@ -1317,6 +1317,12 @@ body.video-mode-active #yt-viewport-wrapper {
 .waveform-bars span:nth-child(18) { animation-delay: -0.18s; --wh: 20px; }
 .waveform-bars span:nth-child(19) { animation-delay: -0.25s; --wh: 10px; }
 .waveform-bars span:nth-child(20) { animation-delay: -0.32s; --wh: 14px; }
+.waveform-bars.paused span {
+  animation: none !important;
+  height: 4px !important;
+  transition: height 0.3s ease;
+}
+
 @keyframes waveBar {
   0%   { height: 4px; }
   100% { height: var(--wh, 12px); }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+<script>window.onerror = function(message, source, lineno, colno, error) { fetch('http://localhost:5173/?error=' + encodeURIComponent(message + ' at ' + lineno)); };</script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>VIBE Room</title>
@@ -34,6 +35,9 @@
         <button class="fs-back-btn" id="fsCloseBtn" title="Minimise" aria-label="Minimise player">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
+        
+        
+
         <!-- Replaced Song/Video toggle with Options button as per design -->
         <button class="fs-menu-btn" id="fsChatToggle" title="Options / Live Chat" aria-label="Options">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
@@ -91,15 +95,7 @@
           <h3>⚙️ Video Quality</h3>
           <button class="fs-back-btn" id="fsQualityCloseBtn">⬇</button>
         </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-          <button class="action-card" id="qBtnAudio" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; text-align: left;">🎵 Audio Only (Data Saver)</button>
-          <button class="action-card" id="qBtnAuto" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; text-align: left;">✨ Best Quality (Auto)</button>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- ==========================================
+        <div id="qualityOptionsContainer" style="padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto;"></div></div></div><!-- ==========================================
          MAIN ROOM UI
     ========================================== -->
     <div class="room-container">
@@ -336,41 +332,6 @@
           </div>
         </div>
 
-        <!-- Vibes / Genres -->
-        <div class="section-block">
-          <p class="section-label">Vibes</p>
-          <div class="genre-chips">
-            <button class="genre-chip chip-purple"><span class="genre-chip-icon">🎸</span>Rock</button>
-            <button class="genre-chip chip-coral"><span class="genre-chip-icon">🔥</span>Trending</button>
-            <button class="genre-chip chip-teal"><span class="genre-chip-icon">🎶</span>Chill</button>
-            <button class="genre-chip chip-pink"><span class="genre-chip-icon">💃</span>Party</button>
-            <button class="genre-chip chip-amber"><span class="genre-chip-icon">🎤</span>Hip-Hop</button>
-          </div>
-        </div>
-
-        <!-- Trending -->
-        <div class="section-block">
-          <div class="trending-header">
-            <p class="section-label" style="margin-bottom:0">Trending</p>
-          </div>
-          <div class="trending-scroll">
-            <div class="trending-card">
-              <img class="trending-card-img" src="https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg" alt="Shape of You">
-              <div class="trending-card-overlay">
-                <div class="trending-card-title">Shape of You</div>
-                <div class="trending-card-artist">Ed Sheeran</div>
-              </div>
-            </div>
-            <div class="trending-card">
-              <img class="trending-card-img" src="https://i.ytimg.com/vi/kTJczUoc26U/hqdefault.jpg" alt="Blinding Lights">
-              <div class="trending-card-overlay">
-                <div class="trending-card-title">Blinding Lights</div>
-                <div class="trending-card-artist">The Weeknd</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Quick Actions -->
         <div class="section-block">
           <p class="section-label">Quick Actions</p>
@@ -447,3 +408,6 @@
     <script type="module" src="/src/room.js"></script>
   </body>
 </html>
+
+
+

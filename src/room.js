@@ -1,6 +1,7 @@
 import { auth, database, onAuthStateChanged, ref, set, push, onValue, onDisconnect, remove, get } from './firebase.js';
 import { joinVoice, leaveVoice, toggleMute } from './voice.js';
 
+let userSelectedQuality = 'auto';
 const UI_ICONS = {
   play: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>`,
   pause: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
@@ -8,7 +9,9 @@ const UI_ICONS = {
   heartFilled: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
   check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
   plus: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
-};
+,
+    trash: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:-3px"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
+  };
 
 // --- State ---
 let currentUser = null;
@@ -435,6 +438,7 @@ function loadCloudPlaylist() {
       });
     }
     renderPlaylist();
+    if (typeof renderHomeOverlayPlaylist === 'function') renderHomeOverlayPlaylist();
   }, (error) => {
     console.error("Firebase Playlist Error:", error);
   });
@@ -612,6 +616,8 @@ function onPlayerStateChange(event) {
     
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.pause;
     if (thumb) thumb.classList.remove('paused');
+    const waveformBars = document.getElementById('waveformBars');
+    if (waveformBars) waveformBars.classList.remove('paused');
     // Sync fullscreen UI if open
     if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
@@ -631,6 +637,8 @@ function onPlayerStateChange(event) {
     
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.play;
     if (thumb) thumb.classList.add('paused');
+    const waveformBars = document.getElementById('waveformBars');
+    if (waveformBars) waveformBars.classList.add('paused');
     if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M5 3v18l15-9z"/></svg>`;
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.remove('playing');
     stopProgressBar();
@@ -772,12 +780,23 @@ function renderQueue() {
   const queueList = document.getElementById('queueList');
   queueList.innerHTML = '';
   
-  queue.forEach((song) => {
+  queue.forEach((song, index) => {
     const isPlaying = queue[nowPlayingIndex]?.id === song.id;
     
     const card = document.createElement('div');
     card.className = `song-card ${isPlaying ? 'now-playing' : ''}`;
+    card.style.position = 'relative';
     
+    let actionsHtml = '';
+    if (!isPlaying) {
+      actionsHtml = `
+        <div style="display:flex; gap:5px; flex-shrink:0;">
+          <button class="btn btn-secondary q-play-btn" style="padding:6px 12px; font-size:0.75rem;" title="Play Now" style="display:flex; align-items:center; gap:4px; padding:6px 12px; font-size:0.75rem;">${UI_ICONS.play} Play</button>
+          <button class="btn btn-secondary q-del-btn" style="padding:6px 10px; font-size:0.8rem; border-color:rgba(255,0,0,0.2);" title="Delete">${UI_ICONS.trash}</button>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <img src="https://i.ytimg.com/vi/${song.videoId}/default.jpg" class="song-thumb">
       <div class="song-details" style="flex-grow: 1;">
@@ -785,7 +804,37 @@ function renderQueue() {
         <div class="song-artist">${song.artist}</div>
         <div class="added-by">Added by ${song.addedBy}</div>
       </div>
+      ${actionsHtml}
     `;
+    
+    if (!isPlaying) {
+      card.querySelector('.q-play-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const stateRef = ref(database, `rooms/${currentRoom}/state`);
+        set(stateRef, {
+          nowPlayingIndex: index,
+          isPlaying: true,
+          seekPosition: 0,
+          lastUpdatedAt: getServerTime()
+        });
+      });
+      
+      card.querySelector('.q-del-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const songRef = ref(database, `rooms/${currentRoom}/queue/${song.id}`);
+        remove(songRef).then(() => {
+          if (index < nowPlayingIndex) {
+            const stateRef = ref(database, `rooms/${currentRoom}/state`);
+            set(stateRef, {
+              nowPlayingIndex: nowPlayingIndex - 1,
+              isPlaying: roomState.isPlaying,
+              seekPosition: player ? player.getCurrentTime() : 0,
+              lastUpdatedAt: getServerTime()
+            });
+          }
+        });
+      });
+    }
     
     queueList.appendChild(card);
   });
@@ -971,16 +1020,18 @@ doSearchBtn.addEventListener('click', async () => {
 
     // Save to playlist button
     const saveBtn = document.createElement('button');
-    saveBtn.type = 'button';
-    saveBtn.innerHTML = UI_ICONS.heartEmpty;
-    saveBtn.title = 'Save to Playlist';
-    saveBtn.style.cssText = 'width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s,transform 0.15s;';
+      saveBtn.type = 'button';
+      saveBtn.title = 'Save to Playlist';
+      saveBtn.style.cssText = 'padding:8px 14px;border-radius:999px;background:white;color:#000;border:1px solid rgba(0,0,0,0.1);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;transition:background 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.05);';
+      saveBtn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;">${UI_ICONS.heartEmpty} Playlist</span>`;
     
     // Check if already saved
-    if (myPlaylist.find(s => s.videoId === res.videoId)) {
-      saveBtn.innerHTML = UI_ICONS.check;
-      saveBtn.style.color = '#84cc16';
-    }
+      if (myPlaylist.find(s => s.videoId === res.videoId)) {
+        saveBtn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;">${UI_ICONS.check} Saved</span>`;
+        saveBtn.style.color = '#84cc16';
+        saveBtn.style.borderColor = '#84cc16';
+        saveBtn.style.background = 'rgba(132,204,22,0.1)';
+      }
 
     saveBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -988,8 +1039,10 @@ doSearchBtn.addEventListener('click', async () => {
         const playlistRef = ref(database, `users/${currentUser.uid}/playlist`);
         push(playlistRef, { videoId: res.videoId, title: cleanTitle, artist: res.artist, thumbnail: res.thumbnail })
           .then(() => {
-            saveBtn.innerHTML = UI_ICONS.check;
+            saveBtn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;">${UI_ICONS.check} Saved</span>`;
             saveBtn.style.color = '#84cc16';
+            saveBtn.style.borderColor = '#84cc16';
+            saveBtn.style.background = 'rgba(132,204,22,0.1)';
             saveBtn.style.background = 'rgba(132,204,22,0.2)';
           })
           .catch(err => {
@@ -1128,7 +1181,7 @@ const fsToggleSong     = document.getElementById('fsToggleSong');
 const fsToggleVideo    = document.getElementById('fsToggleVideo');
 const fsChatMessages   = document.getElementById('fsChatMessages');
 const fsChatInput      = document.getElementById('fsChatInput');
-const fsSendChatBtn    = document.getElementById('fsSendChatBtn');
+const fsSendChatBtn    = document.getElementById('fsChatSendBtn');
 
 let isFullscreen = false;
 
@@ -1202,7 +1255,7 @@ if (fsProgressSlider) {
 }
 
 // Like button — broadcast a heart reaction to all users
-fsLikeBtn.addEventListener('click', () => {
+if (fsLikeBtn) fsLikeBtn.addEventListener('click', () => {
   fsLikeBtn.classList.toggle('liked');
   fsLikeBtn.innerHTML = fsLikeBtn.classList.contains('liked') ? UI_ICONS.heartFilled : UI_ICONS.heartEmpty;
   broadcastEmoji('❤️');
@@ -1274,80 +1327,145 @@ function syncAndUpdateFS() {
 
 // FS Chat overlay toggle replaced with Quality Menu
 const fsQualityOverlay = document.getElementById('fsQualityOverlay');
-const fsQualityCloseBtn = document.getElementById('fsQualityCloseBtn');
-const qBtnAudio = document.getElementById('qBtnAudio');
-const qBtnAuto = document.getElementById('qBtnAuto');
+  const fsQualityCloseBtn = document.getElementById('fsQualityCloseBtn');
+  
+  let requestedQuality = 'auto';
+  
+  const qualityOptionsContainer = document.getElementById('qualityOptionsContainer');
+  
+  if (qualityOptionsContainer) {
+    // Event delegation for clicks
+    qualityOptionsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.q-set-btn');
+      if (!btn) return;
+      const qVal = btn.dataset.quality;
+      
+      requestedQuality = qVal;
+      
+      qualityOptionsContainer.querySelectorAll('.q-set-btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-secondary');
+        const check = b.querySelector('.q-check');
+        if (check) check.style.display = 'none';
+      });
+      btn.classList.add('btn-primary');
+      btn.classList.remove('btn-secondary');
+      const check = btn.querySelector('.q-check');
+      if (check) check.style.display = 'inline';
+      
+      if (player && typeof player.setPlaybackQualityRange === 'function') {
+        player.setPlaybackQualityRange(qVal, qVal);
+      } else if (player && typeof player.setPlaybackQuality === 'function') {
+        player.setPlaybackQuality(qVal === 'auto' ? 'default' : qVal);
+      }
+      
+      // Physically force YouTube to drop/raise quality by hacking the iframe size immediately
+      updateVideoPosition();
+      
+      setTimeout(() => {
+        if (fsQualityOverlay) fsQualityOverlay.classList.remove('open');
+      }, 150);
+    });
+  }
 
-fsChatToggle.addEventListener('click', () => {
-  if (fsQualityOverlay) fsQualityOverlay.classList.toggle('open');
-});
-
-if (fsQualityCloseBtn) {
-  fsQualityCloseBtn.addEventListener('click', () => {
-    fsQualityOverlay.classList.remove('open');
-  });
-}
-
-if (qBtnAudio) {
-  qBtnAudio.addEventListener('click', () => {
-    isVideoEnabled = false;
-    if (player && typeof player.setPlaybackQualityRange === 'function') {
-      player.setPlaybackQualityRange('small', 'small');
-    } else if (player && typeof player.setPlaybackQuality === 'function') {
-      player.setPlaybackQuality('small');
+  const QUALITY_LABELS = {
+    'highres': 'High Res',
+    'hd2160': '2160p (4K)',
+    'hd1440': '1440p (2K)',
+    'hd1080': '1080p (HD)',
+    'hd720': '720p',
+    'large': '480p',
+    'medium': '360p',
+    'small': '240p',
+    'tiny': '144p',
+    'auto': 'Auto'
+  };
+  
+  fsChatToggle.addEventListener('click', () => {
+    if (fsQualityOverlay) {
+      if (qualityOptionsContainer && player && typeof player.getAvailableQualityLevels === 'function') {
+        let availableQualities = player.getAvailableQualityLevels();
+        if (!availableQualities || availableQualities.length === 0) {
+          availableQualities = ['auto'];
+        }
+        if (!availableQualities.includes('auto')) {
+          availableQualities.unshift('auto');
+        }
+        
+        // Remove duplicates and reverse so higher quality is at the top
+        availableQualities = [...new Set(availableQualities)];
+        
+        let qHtml = '';
+        availableQualities.forEach(qVal => {
+          const label = QUALITY_LABELS[qVal] || qVal;
+          const isSelected = (qVal === requestedQuality);
+          qHtml += `<button class="btn ${isSelected ? 'btn-primary' : 'btn-secondary'} q-set-btn" data-quality="${qVal}" style="padding:15px; font-size:1rem; text-align:left; border-radius:12px; margin-bottom:10px; width: 100%; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+            <span>${label}</span>
+            <span class="q-check" style="display:${isSelected ? 'inline' : 'none'}; font-size:1.2rem; font-weight:bold;">${UI_ICONS.check || '✓'}</span>
+          </button>`;
+        });
+        qualityOptionsContainer.innerHTML = qHtml;
+      }
+      fsQualityOverlay.classList.toggle('open');
     }
-    updateVideoPosition();
-    fsQualityOverlay.classList.remove('open');
   });
-}
-
-if (qBtnAuto) {
-  qBtnAuto.addEventListener('click', () => {
-    isVideoEnabled = true;
-    if (player && typeof player.setPlaybackQualityRange === 'function') {
-      player.setPlaybackQualityRange('auto', 'auto');
-    } else if (player && typeof player.setPlaybackQuality === 'function') {
-      player.setPlaybackQuality('default');
-    }
-    updateVideoPosition();
-    fsQualityOverlay.classList.remove('open');
-  });
-}
+  
+  if (fsQualityCloseBtn) {
+    fsQualityCloseBtn.addEventListener('click', () => {
+      fsQualityOverlay.classList.remove('open');
+    });
+  }
 
 // Audio / Video Toggle
 const ytViewportWrapper = document.getElementById('yt-viewport-wrapper');
 
-let isVideoEnabled = false; // Default to Audio Only per user preference
+const QUALITY_DIMENSIONS = {
+  'auto': null,
+  'hd2160': { w: 3840, h: 2160 },
+  'hd1440': { w: 2560, h: 1440 },
+  'hd1080': { w: 1920, h: 1080 },
+  'hd720': { w: 1280, h: 720 },
+  'large': { w: 854, h: 480 },
+  'medium': { w: 640, h: 360 },
+  'small': { w: 426, h: 240 },
+  'tiny': { w: 256, h: 144 }
+};
 
 function updateVideoPosition() {
+  const ytPlayer = document.getElementById('youtube-player');
+  if (!ytPlayer) return;
+  
+  const dims = (typeof requestedQuality !== 'undefined' && QUALITY_DIMENSIONS[requestedQuality]) ? QUALITY_DIMENSIONS[requestedQuality] : null;
+
   if (document.body.classList.contains('video-mode-active') && isFullscreen) {
-    if (fsArtwork) {
-      const artRect = fsArtwork.getBoundingClientRect();
-      if (artRect.height > 0 && ytViewportWrapper) {
-        ytViewportWrapper.style.top = (artRect.top + artRect.height / 2) + 'px';
-      }
-    } else {
-      if (ytViewportWrapper) {
-        ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; transform: none !important; z-index: 100 !important; opacity: 1 !important; pointer-events: none !important;';
-      }
-      const ytPlayer = document.getElementById('youtube-player');
-      if (ytPlayer) {
-        if (isVideoEnabled) {
-          // Force iframe to be exactly 16:9, crop out letterboxing
-          ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 320vh !important; height: 180vh !important; transform: translate(-50%, -50%) !important; opacity: 1 !important;';
-        } else {
-          // Audio Only mode: shrink iframe to 10px to force YouTube into streaming 144p audio-only equivalent, and hide it completely
-          ytPlayer.style.cssText = 'position: absolute !important; top: -9999px !important; left: -9999px !important; width: 10px !important; height: 10px !important; opacity: 0 !important; pointer-events: none !important;';
-        }
-      }
-    }
-  } else {
     if (ytViewportWrapper) {
-      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);';
+      ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; transform: none !important; z-index: 100 !important; opacity: 1 !important; pointer-events: none !important;';
     }
-    const ytPlayer = document.getElementById('youtube-player');
-    if (ytPlayer) {
-      ytPlayer.style.cssText = 'position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;';
+    
+    const screenRatio = window.innerWidth / window.innerHeight;
+    // User requested zoom to fill all corners on both desktop and mobile
+    const zoomFactor = 1.35;
+    
+    const w = dims ? dims.w : 1280;
+    const h = dims ? dims.h : 720;
+    
+    const scaleX = window.innerWidth / w;
+    const scaleY = window.innerHeight / h;
+    const scale = Math.max(scaleX, scaleY) * zoomFactor;
+    
+    ytPlayer.style.cssText = `position: absolute !important; top: 50% !important; left: 50% !important; width: ${w}px !important; height: ${h}px !important; transform: translate(-50%, -50%) scale(${scale}) !important; opacity: 1 !important; pointer-events: none !important; transform-origin: center center;`;
+    
+  } else {
+    // Hidden mode (audio only background)
+    if (ytViewportWrapper) {
+      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; width: 2px; height: 2px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden;';
+    }
+    if (dims) {
+      // Force specific resolution in background by keeping the large layout footprint
+      ytPlayer.style.cssText = `position: absolute; top: 0; left: 0; width: ${dims.w}px; height: ${dims.h}px; opacity: 1; pointer-events: none; transform: scale(0.001); transform-origin: top left;`;
+    } else {
+      // Auto in background defaults to tiny to save data
+      ytPlayer.style.cssText = 'position: absolute; top: 0; left: 0; width: 256px; height: 144px; opacity: 1; pointer-events: none; transform: scale(0.001); transform-origin: top left;';
     }
   }
 }
@@ -1376,11 +1494,11 @@ fsChatCloseBtn.addEventListener('click', () => {
   document.body.classList.remove('chat-overlay-open');
 });
 
-fsSendChatBtn.addEventListener('click', () => {
+if (fsSendChatBtn) fsSendChatBtn.addEventListener('click', () => {
   const text = fsChatInput.value.trim();
   if (text) { sendChat(text); fsChatInput.value = ''; }
 });
-fsChatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') fsSendChatBtn.click(); });
+if (fsChatInput) fsChatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && fsSendChatBtn) fsSendChatBtn.click(); });
 
 // syncFsChatMessages removed — chat is now handled by the central renderChatMessages
 // listener in setupFirebaseListeners which updates both panels simultaneously
