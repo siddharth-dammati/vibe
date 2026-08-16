@@ -673,16 +673,25 @@ document.getElementById('playPauseBtn').addEventListener('click', () => {
 document.getElementById('nextBtn').addEventListener('click', playNext);
 
 // Aggressively prevent browser from pausing YouTube iframe when switching tabs
+let bgPlayInterval;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    // Tab went to background. If we should be playing, force the YouTube API to stay playing
-    if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      setTimeout(() => player.playVideo(), 50);
-    }
+    // Tab went to background.
+    // The browser pauses YouTube iframes asynchronously right AFTER visibilitychange.
+    // We forcefully ping playVideo to override this pause.
+    if (bgPlayInterval) clearInterval(bgPlayInterval);
+    bgPlayInterval = setInterval(() => {
+      if (isPlayerReady && roomState && roomState.isPlaying) {
+        if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
+          player.playVideo();
+        }
+      }
+    }, 500);
   } else {
-    // Tab came back to foreground. Force sync if it got paused somehow
+    // Tab came back to foreground.
+    if (bgPlayInterval) clearInterval(bgPlayInterval);
     if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      setTimeout(() => player.playVideo(), 50);
+      player.playVideo();
     }
   }
 });
@@ -1461,7 +1470,7 @@ function updateVideoPosition() {
       ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);';
     }
     if (ytPlayer) {
-      ytPlayer.style.cssText = 'position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;';
+      ytPlayer.style.cssText = 'position: absolute !important; top: -9999px !important; left: -9999px !important; width: 10px !important; height: 10px !important; opacity: 0 !important; pointer-events: none !important;';
     }
   }
 }
