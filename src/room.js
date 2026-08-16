@@ -51,6 +51,16 @@ function initRoom() {
   loadCloudPlaylist();
   loadFriends();
 
+  const initialSongStr = sessionStorage.getItem('jam_initial_song');
+  if (initialSongStr) {
+    sessionStorage.removeItem('jam_initial_song');
+    try {
+      const initialSong = JSON.parse(initialSongStr);
+      // Wait a tiny bit for queue listeners to attach just in case
+      setTimeout(() => addToQueueAndPlay(initialSong), 500);
+    } catch (e) {}
+  }
+
   // Request notification permission if not already granted/denied
   const notificationSetup = document.getElementById('notificationSetup');
   
@@ -1264,7 +1274,7 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
 
 // View transition animation
 function switchView(viewName) {
-  if (viewName === 'home') { openHomeOverlay(); return; }
+  if (viewName === 'home') { window.location.href = '/'; return; }
   if (viewName === 'search') {
     searchModal.classList.remove('hidden');
     setTimeout(() => document.getElementById('searchInput').focus(), 100);
@@ -1304,7 +1314,7 @@ const homeNpPlayPause   = document.getElementById('homeNpPlayPause');
 const homeOverlayPlaylist = document.getElementById('homeOverlayPlaylist');
 
 // back button in header
-document.getElementById('goHomeBtn')?.addEventListener('click', openHomeOverlay);
+document.getElementById('goHomeBtn')?.addEventListener('click', () => { window.location.href = '/'; });
 
 function openHomeOverlay() {
   homeOverlay.style.transform = 'translateY(0)';

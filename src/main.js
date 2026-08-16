@@ -1,4 +1,4 @@
-import { auth, database, googleProvider, signInWithPopup, onAuthStateChanged, ref, onValue, remove } from './firebase.js';
+import { auth, database, googleProvider, signInWithPopup, onAuthStateChanged, ref, onValue, remove, push, set } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const createRoomBtn = document.getElementById('createRoomBtn');
@@ -181,4 +181,88 @@ document.addEventListener('DOMContentLoaded', () => {
       alert("Please enter a valid room code.");
     }
   });
+
+  // Search Logic
+  const homeSearchInput = document.getElementById('homeSearchInput');
+  const homeSearchModal = document.getElementById('homeSearchModal');
+  const closeSearchModal = document.getElementById('closeSearchModal');
+  const homeSearchResults = document.getElementById('homeSearchResults');
+  const YOUTUBE_API_KEY = 'AIzaSyDuz95QvhC2iLVXanoH1abBY7hbXyyYol8';
+
+  if (homeSearchInput) {
+    homeSearchInput.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        const query = homeSearchInput.value.trim();
+        if (!query) return;
+        
+        homeSearchModal.classList.remove('hidden');
+        homeSearchResults.innerHTML = '<div style="text-align:center; padding: 20px;">Searching...</div>';
+        
+        try {
+          const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=8&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}`);
+          const data = await res.json();
+          homeSearchResults.innerHTML = '';
+          
+          if (!data.items || data.items.length === 0) {
+            homeSearchResults.innerHTML = '<div style="text-align:center; padding: 20px;">No results found.</div>';
+            return;
+          }
+          
+          data.items.forEach(item => {
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const channel = item.snippet.channelTitle;
+            const thumb = item.snippet.thumbnails.default.url;
+            
+            const card = document.createElement('div');
+            card.className = 'home-song-card';
+            card.style.cursor = 'default';
+            card.innerHTML = `
+              <img src="${thumb}" class="home-song-thumb" alt="Thumbnail">
+              <div class="home-song-info">
+                <div class="home-song-title">${title}</div>
+                <div class="home-song-artist">${channel}</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn play-btn" style="background:#6C63FF; color:white; border:none; padding:8px 12px; border-radius:12px; font-weight:700; cursor:pointer;">Play</button>
+                <button class="btn add-btn" style="background:rgba(0,0,0,0.05); color:#0F0F1A; border:none; padding:8px 12px; border-radius:12px; font-weight:700; cursor:pointer;">Save</button>
+              </div>
+            `;
+            
+            const playBtn = card.querySelector('.play-btn');
+            playBtn.addEventListener('click', () => {
+              const roomCode = generateRoomCode();
+              const songData = { videoId, title, artist: channel, thumb };
+              sessionStorage.setItem('jam_initial_song', JSON.stringify(songData));
+              window.location.href = `/src/room.html?room=${roomCode}&host=true`;
+            });
+            
+            const addBtn = card.querySelector('.add-btn');
+            addBtn.addEventListener('click', async () => {
+              const currentUser = auth.currentUser;
+              if (!currentUser) return;
+              const playlistRef = ref(database, `users/${currentUser.uid}/playlist`);
+              const newSongRef = push(playlistRef);
+              await set(newSongRef, { videoId, title, artist: channel, thumbnail: thumb, addedAt: Date.now() });
+              addBtn.textContent = 'Saved!';
+              addBtn.style.background = '#10B981';
+              addBtn.style.color = 'white';
+              setTimeout(() => { addBtn.textContent = 'Save'; addBtn.style.background = 'rgba(0,0,0,0.05)'; addBtn.style.color = '#0F0F1A'; }, 2000);
+            });
+            
+            homeSearchResults.appendChild(card);
+          });
+        } catch (error) {
+          console.error(error);
+          homeSearchResults.innerHTML = '<div style="text-align:center; padding: 20px;">Error searching YouTube.</div>';
+        }
+      }
+    });
+  }
+  
+  if (closeSearchModal) {
+    closeSearchModal.addEventListener('click', () => {
+      homeSearchModal.classList.add('hidden');
+    });
+  }
 });
