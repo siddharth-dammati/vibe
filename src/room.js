@@ -139,11 +139,13 @@ function syncPlayerState() {
       const drift = (getServerTime() - roomState.lastUpdatedAt) / 1000;
       const targetTime = roomState.seekPosition + drift;
       
-      // Only seek if we are out of sync by > 0.8 seconds
-      if (Math.abs((player.getCurrentTime() || 0) - targetTime) > 0.8) {
+      // Only seek if we are out of sync by > 0.8 seconds AND tab is visible
+      // Seeking while tab is hidden often causes YouTube to indefinitely pause until focused
+      if (!document.hidden && Math.abs((player.getCurrentTime() || 0) - targetTime) > 0.8) {
         player.seekTo(targetTime, true);
       }
-      if (player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) {
+      
+      if (!document.hidden && player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) {
         player.playVideo();
       }
     } else {
