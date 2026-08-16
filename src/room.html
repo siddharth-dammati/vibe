@@ -74,7 +74,7 @@
       <div class="fs-chat-overlay" id="fsChatOverlay">
         <div class="fs-chat-header">
           <h3>💬 Live Chat</h3>
-          <button class="fs-back-btn" id="fsChatCloseBtn">✕</button>
+          <button class="fs-back-btn" id="fsChatCloseBtn">⬇</button>
         </div>
         <div class="fs-chat-messages" id="fsChatMessages"></div>
         <div class="fs-chat-input-row">
@@ -82,6 +82,18 @@
           <button id="fsChatSendBtn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
           </button>
+        </div>
+      </div>
+
+      <!-- Quality Settings overlay -->
+      <div class="fs-chat-overlay" id="fsQualityOverlay">
+        <div class="fs-chat-header">
+          <h3>⚙️ Video Quality</h3>
+          <button class="fs-back-btn" id="fsQualityCloseBtn">⬇</button>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+          <button class="action-card" id="qBtnAudio" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; text-align: left;">🎵 Audio Only (Data Saver)</button>
+          <button class="action-card" id="qBtnAuto" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; text-align: left;">✨ Best Quality (Auto)</button>
         </div>
       </div>
     </div>

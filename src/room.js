@@ -1240,11 +1240,15 @@ function startFsProgressUpdater() {
     const current  = player.getCurrentTime();
     if (!duration) return;
 
-    if (fsProgressSlider && document.activeElement !== fsProgressSlider) {
-      fsProgressSlider.value = (current / duration) * 100;
+    const fsSlider = document.getElementById('fsProgressSlider');
+    const fsCurTime = document.getElementById('fsCurrentTime');
+    const fsDurTime = document.getElementById('fsDuration');
+
+    if (fsSlider && document.activeElement !== fsSlider) {
+      fsSlider.value = (current / duration) * 100;
     }
-    if (fsCurrentTime) fsCurrentTime.textContent = formatTime(current);
-    if (fsDuration) fsDuration.textContent    = formatTime(duration);
+    if (fsCurTime) fsCurTime.textContent = formatTime(current);
+    if (fsDurTime) fsDurTime.textContent = formatTime(duration);
   }, 500);
 }
 
@@ -1266,19 +1270,52 @@ function syncAndUpdateFS() {
 // Hook into state listener — detect play/pause changes
 // (onPlayerStateChange is already defined above near YouTube setup)
 
-// FS Chat overlay toggle
+// FS Chat overlay toggle replaced with Quality Menu
+const fsQualityOverlay = document.getElementById('fsQualityOverlay');
+const fsQualityCloseBtn = document.getElementById('fsQualityCloseBtn');
+const qBtnAudio = document.getElementById('qBtnAudio');
+const qBtnAuto = document.getElementById('qBtnAuto');
+
 fsChatToggle.addEventListener('click', () => {
-  fsChatOverlay.classList.toggle('open');
-  document.body.classList.toggle('chat-overlay-open', fsChatOverlay.classList.contains('open'));
-  
-  if (fsChatOverlay.classList.contains('open')) {
-    // Chat is auto-synced by the central Firebase listener — just focus input
-    setTimeout(() => fsChatInput.focus(), 400);
-  }
+  if (fsQualityOverlay) fsQualityOverlay.classList.toggle('open');
 });
+
+if (fsQualityCloseBtn) {
+  fsQualityCloseBtn.addEventListener('click', () => {
+    fsQualityOverlay.classList.remove('open');
+  });
+}
+
+if (qBtnAudio) {
+  qBtnAudio.addEventListener('click', () => {
+    isVideoEnabled = false;
+    if (player && typeof player.setPlaybackQualityRange === 'function') {
+      player.setPlaybackQualityRange('small', 'small');
+    } else if (player && typeof player.setPlaybackQuality === 'function') {
+      player.setPlaybackQuality('small');
+    }
+    updateVideoPosition();
+    fsQualityOverlay.classList.remove('open');
+  });
+}
+
+if (qBtnAuto) {
+  qBtnAuto.addEventListener('click', () => {
+    isVideoEnabled = true;
+    if (player && typeof player.setPlaybackQualityRange === 'function') {
+      player.setPlaybackQualityRange('auto', 'auto');
+    } else if (player && typeof player.setPlaybackQuality === 'function') {
+      player.setPlaybackQuality('default');
+    }
+    updateVideoPosition();
+    fsQualityOverlay.classList.remove('open');
+  });
+}
 
 // Audio / Video Toggle
 const ytViewportWrapper = document.getElementById('yt-viewport-wrapper');
+
+let isVideoEnabled = false; // Default to Audio Only per user preference
 
 function updateVideoPosition() {
   if (document.body.classList.contains('video-mode-active') && isFullscreen) {
@@ -1288,20 +1325,21 @@ function updateVideoPosition() {
         ytViewportWrapper.style.top = (artRect.top + artRect.height / 2) + 'px';
       }
     } else {
-      // In new fullscreen UI, force full-bleed video via JS
       if (ytViewportWrapper) {
         ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; transform: none !important; z-index: 100 !important; opacity: 1 !important; pointer-events: none !important;';
       }
       const ytPlayer = document.getElementById('youtube-player');
       if (ytPlayer) {
-        // Force iframe to be exactly 16:9. By making the height massively larger than 100vh (180vh),
-        // we guarantee that even music videos with baked-in cinematic black bars are fully cropped out,
-        // and the actual video content fills every corner of the screen.
-        ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 320vh !important; height: 180vh !important; transform: translate(-50%, -50%) !important;';
+        if (isVideoEnabled) {
+          // Force iframe to be exactly 16:9, crop out letterboxing
+          ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 320vh !important; height: 180vh !important; transform: translate(-50%, -50%) !important; opacity: 1 !important;';
+        } else {
+          // Audio Only mode: shrink iframe to 10px to force YouTube into streaming 144p audio-only equivalent, and hide it completely
+          ytPlayer.style.cssText = 'position: absolute !important; top: -9999px !important; left: -9999px !important; width: 10px !important; height: 10px !important; opacity: 0 !important; pointer-events: none !important;';
+        }
       }
     }
   } else if (ytViewportWrapper) {
-    // Revert to mini player sizing
     ytViewportWrapper.style.cssText = '';
   }
 }
