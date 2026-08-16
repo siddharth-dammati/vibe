@@ -150,9 +150,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = `/src/room.html?room=${roomCode}&host=true`;
   });
 
+  const createRoomBtn2 = document.getElementById('createRoomBtn2');
+  if (createRoomBtn2) {
+    createRoomBtn2.addEventListener('click', () => {
+      const roomCode = generateRoomCode();
+      window.location.href = `/src/room.html?room=${roomCode}&host=true`;
+    });
+  }
+
   joinRoomBtn.addEventListener('click', () => {
     joinModal.classList.remove('hidden');
   });
+
+  const joinRoomBtn2 = document.getElementById('joinRoomBtn2');
+  if (joinRoomBtn2) {
+    joinRoomBtn2.addEventListener('click', () => {
+      joinModal.classList.remove('hidden');
+    });
+  }
 
   closeModal.addEventListener('click', () => {
     joinModal.classList.add('hidden');
