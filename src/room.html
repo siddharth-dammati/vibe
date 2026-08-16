@@ -20,14 +20,11 @@
     <div class="fs-inline-chat" id="fsInlineChat"></div>
 
     <!-- ==========================================
-         FULL SCREEN PLAYER
+         FULL SCREEN PLAYER (9:16 Video Background Redesign)
     ========================================== -->
     <div class="fullscreen-player" id="fullscreenPlayer">
-      <!-- Blurred artwork background -->
-      <div class="fs-bg">
-        <div class="fs-bg-art" id="fsBgArt"></div>
-        <div class="fs-bg-overlay"></div>
-      </div>
+      <!-- Gradient over the full-bleed video to make text readable -->
+      <div class="fs-video-gradient"></div>
 
       <!-- Drag handle -->
       <div class="fs-drag-handle"></div>
@@ -35,68 +32,52 @@
       <!-- Top Header -->
       <div class="fs-header">
         <button class="fs-back-btn" id="fsCloseBtn" title="Minimise" aria-label="Minimise player">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <div class="fs-toggle-container" id="fsToggleContainer">
-          <div class="fs-toggle-bg" id="fsToggleBg"></div>
-          <button class="fs-toggle-btn active" id="fsToggleSong">Song</button>
-          <button class="fs-toggle-btn" id="fsToggleVideo">Video</button>
-        </div>
-        <button class="fs-menu-btn" id="fsChatToggle" title="Live Chat" aria-label="Open live chat">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+        <!-- Replaced Song/Video toggle with Options button as per design -->
+        <button class="fs-menu-btn" id="fsChatToggle" title="Options / Live Chat" aria-label="Options">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
         </button>
       </div>
 
-      <!-- Artwork -->
-      <div class="fs-art-container">
-        <img class="fs-artwork" id="fsArtwork" src="" alt="Album Art" />
-      </div>
-
-      <!-- Song Info -->
-      <div class="fs-info">
+      <!-- The bottom section content -->
+      <div class="fs-bottom-content">
+        <div class="fs-recommend-pill">Recommend</div>
+        
         <div class="fs-info-text">
           <div class="fs-song-title" id="fsSongTitle">—</div>
           <div class="fs-song-artist" id="fsSongArtist">—</div>
         </div>
-        <button class="fs-like-btn" id="fsLikeBtn">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </button>
-      </div>
 
-      <!-- Progress Bar -->
-      <div class="fs-progress">
-        <div class="fs-progress-track" id="fsProgressTrack">
-          <div class="fs-progress-fill" id="fsProgressFill"></div>
+        <!-- Volume Slider Capsule -->
+        <div class="fs-volume-capsule">
+          <span class="fs-vol-label">Volume</span>
+          <input type="range" class="fs-vol-slider" id="fsVolSlider" min="0" max="100" value="60">
+          <span class="fs-vol-value" id="fsVolValue">60%</span>
         </div>
-        <div class="fs-time">
-          <span id="fsCurrentTime">0:00</span>
-          <span id="fsDuration">0:00</span>
+
+        <!-- Progress Bar (hidden in the reference image, but good to keep minimal) -->
+        <div class="fs-progress" style="margin-top: 10px;">
+          <div class="fs-progress-track" id="fsProgressTrack">
+            <div class="fs-progress-fill" id="fsProgressFill"></div>
+          </div>
+          <div class="fs-time">
+            <span id="fsCurrentTime">0:00</span>
+            <span id="fsDuration">0:00</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Controls -->
-      <div class="fs-controls">
-        <button class="fs-ctrl-btn" id="fsPrevBtn">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
-        </button>
-        <button class="fs-play-btn" id="fsPlayPauseBtn">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>
-        </button>
-        <button class="fs-ctrl-btn" id="fsNextBtn">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
-        </button>
-      </div>
-
-      <!-- Bottom strip: Reactions + Chat toggle -->
-      <div class="fs-bottom-strip">
-        <div class="fs-reactions">
-          <button class="reaction-btn" data-emoji="🔥">🔥</button>
-          <button class="reaction-btn" data-emoji="❤️">❤️</button>
-          <button class="reaction-btn" data-emoji="🎵">🎵</button>
-          <button class="reaction-btn" data-emoji="🤩">🤩</button>
-          <button class="reaction-btn" data-emoji="👏">👏</button>
-          <button class="reaction-btn" data-emoji="💜">💜</button>
-          <button class="reaction-btn" data-emoji="🚀">🚀</button>
+        <!-- Playback Controls -->
+        <div class="fs-controls">
+          <button class="fs-ctrl-btn circle-btn" id="fsSkipBackBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="16" text-anchor="middle" font-size="8" font-family="sans-serif" font-weight="bold" fill="currentColor">10</text></svg>
+          </button>
+          <button class="fs-play-btn solid-white" id="fsPlayPauseBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M5 3v18l15-9z"/></svg>
+          </button>
+          <button class="fs-ctrl-btn circle-btn" id="fsSkipFwdBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="16" text-anchor="middle" font-size="8" font-family="sans-serif" font-weight="bold" fill="currentColor">10</text></svg>
+          </button>
         </div>
       </div>
 
@@ -108,15 +89,14 @@
         </div>
         <div class="fs-chat-messages" id="fsChatMessages"></div>
         <div class="fs-chat-input-row">
-          <input type="text" id="fsChatInput" placeholder="Say something..." style="
-            flex-grow: 1; padding: 14px 20px; border-radius: 24px;
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
-            color: white; outline: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-          ">
-          <button class="btn btn-primary" id="fsSendChatBtn" style="padding: 14px 24px; border-radius: 24px; font-weight: 700;">Send</button>
+          <input type="text" id="fsChatInput" placeholder="Send a message..." autocomplete="off">
+          <button id="fsChatSendBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
         </div>
       </div>
     </div>
+
 
     <!-- ==========================================
          MAIN ROOM UI

@@ -613,7 +613,7 @@ function onPlayerStateChange(event) {
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.pause;
     if (thumb) thumb.classList.remove('paused');
     // Sync fullscreen UI if open
-    if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
   } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
@@ -631,7 +631,7 @@ function onPlayerStateChange(event) {
     
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.play;
     if (thumb) thumb.classList.add('paused');
-    if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>`;
+    if (typeof fsPlayPauseBtn !== 'undefined' && fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M5 3v18l15-9z"/></svg>`;
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.remove('playing');
     stopProgressBar();
   }
@@ -1113,8 +1113,10 @@ const fsBgArt          = document.getElementById('fsBgArt');
 const fsSongTitle      = document.getElementById('fsSongTitle');
 const fsSongArtist     = document.getElementById('fsSongArtist');
 const fsPlayPauseBtn   = document.getElementById('fsPlayPauseBtn');
-const fsPrevBtn        = document.getElementById('fsPrevBtn');
-const fsNextBtn        = document.getElementById('fsNextBtn');
+const fsSkipBackBtn    = document.getElementById('fsSkipBackBtn');
+const fsSkipFwdBtn     = document.getElementById('fsSkipFwdBtn');
+const fsVolSlider      = document.getElementById('fsVolSlider');
+const fsVolValue       = document.getElementById('fsVolValue');
 const fsProgressFill   = document.getElementById('fsProgressFill');
 const fsCurrentTime    = document.getElementById('fsCurrentTime');
 const fsDuration       = document.getElementById('fsDuration');
@@ -1143,6 +1145,17 @@ function openFullscreen() {
   isFullscreen = true;
   document.body.classList.add('fullscreen-open');
   fullscreenPlayer.classList.add('open');
+  
+  // Force 9:16 background video mode on
+  document.body.classList.add('video-mode-active');
+
+  // Sync volume slider
+  if (player && typeof player.getVolume === 'function') {
+    const vol = player.getVolume();
+    if (fsVolSlider) fsVolSlider.value = vol;
+    if (fsVolValue) fsVolValue.textContent = vol + '%';
+  }
+
   updateFullscreenUI();
   updateVideoPosition();
   startFsProgressUpdater();
@@ -1166,15 +1179,36 @@ fsPlayPauseBtn.addEventListener('click', (e) => {
   document.getElementById('playPauseBtn').click();
 });
 
-fsPrevBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('prevBtn').click();
-});
+if (fsSkipBackBtn) {
+  fsSkipBackBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (player && player.getCurrentTime) {
+      player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
+    }
+  });
+}
 
-fsNextBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  document.getElementById('nextBtn').click();
-});
+if (fsSkipFwdBtn) {
+  fsSkipFwdBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (player && player.getCurrentTime && player.getDuration) {
+      player.seekTo(Math.min(player.getDuration(), player.getCurrentTime() + 10), true);
+    }
+  });
+}
+
+// Volume Slider
+if (fsVolSlider) {
+  fsVolSlider.addEventListener('input', (e) => {
+    const vol = e.target.value;
+    if (fsVolValue) fsVolValue.textContent = vol + '%';
+    if (player && typeof player.setVolume === 'function') {
+      player.setVolume(vol);
+      if (vol == 0) player.mute();
+      else player.unMute();
+    }
+  });
+}
 
 // Like button — broadcast a heart reaction to all users
 fsLikeBtn.addEventListener('click', () => {
