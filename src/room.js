@@ -1160,9 +1160,11 @@ function closeFullscreen() {
   document.body.classList.remove('fullscreen-open');
   fullscreenPlayer.classList.remove('open');
   fsChatOverlay.classList.remove('open');
+  if (fsQualityOverlay) fsQualityOverlay.classList.remove('open');
   document.body.classList.remove('chat-overlay-open');
   if (fsToggleSong) fsToggleSong.click();
   stopFsProgressUpdater();
+  updateVideoPosition();
 }
 
 fsCloseBtn.addEventListener('click', closeFullscreen);
@@ -1339,8 +1341,10 @@ function updateVideoPosition() {
         }
       }
     }
-  } else if (ytViewportWrapper) {
-    ytViewportWrapper.style.cssText = '';
+  } else {
+    if (ytViewportWrapper) ytViewportWrapper.style.cssText = '';
+    const ytPlayer = document.getElementById('youtube-player');
+    if (ytPlayer) ytPlayer.style.cssText = '';
   }
 }
 window.addEventListener('resize', updateVideoPosition);
