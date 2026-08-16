@@ -576,6 +576,7 @@ function onPlayerStateChange(event) {
   const thumb = document.getElementById('playerThumb');
 
   if (event.data == YT.PlayerState.PLAYING) {
+    document.body.classList.remove('youtube-paused');
     initSilentAudio();
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing';
@@ -596,6 +597,7 @@ function onPlayerStateChange(event) {
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
   } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
+    document.body.classList.add('youtube-paused');
     // Hack: If browser auto-paused the video because the tab went to background or any other reason, force it back!
     if (roomState && roomState.isPlaying) {
       setTimeout(() => {

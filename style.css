@@ -1702,3 +1702,7 @@ body.video-mode-active #yt-viewport-wrapper {
       @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
       .hidden{display:none!important}
 body.home-overlay-open #yt-viewport-wrapper { opacity: 0.001 !important; pointer-events: none !important; z-index: 9999 !important; }
+
+/* Premium Paused State - hide video and reveal artwork gracefully */
+body.video-mode-active.youtube-paused #yt-viewport-wrapper { opacity: 0.001 !important; transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+body.video-mode-active.youtube-paused .fs-art-container { opacity: 1 !important; pointer-events: auto; transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
