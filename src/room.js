@@ -571,11 +571,31 @@ function onPlayerReady(event) {
   syncPlayerState();
 }
 
+let videoActionTimeout;
+function showVideoActionOverlay(type) {
+  const overlay = document.getElementById('videoActionOverlay');
+  const icon = document.getElementById('videoActionIcon');
+  if (!overlay || !icon) return;
+
+  if (type === 'play') {
+    icon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+  } else {
+    icon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+  }
+
+  overlay.classList.add('show');
+  clearTimeout(videoActionTimeout);
+  videoActionTimeout = setTimeout(() => {
+    overlay.classList.remove('show');
+  }, 800);
+}
+
 function onPlayerStateChange(event) {
   const playPauseBtn = document.getElementById('playPauseBtn');
   const thumb = document.getElementById('playerThumb');
 
   if (event.data == YT.PlayerState.PLAYING) {
+    showVideoActionOverlay('play');
     document.body.classList.remove('youtube-paused');
     initSilentAudio();
     if ('mediaSession' in navigator) {
@@ -597,6 +617,7 @@ function onPlayerStateChange(event) {
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
   } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
+    showVideoActionOverlay('pause');
     document.body.classList.add('youtube-paused');
     // Hack: If browser auto-paused the video because the tab went to background or any other reason, force it back!
     if (roomState && roomState.isPlaying) {

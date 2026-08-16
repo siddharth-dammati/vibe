@@ -11,6 +11,9 @@
     <!-- Hidden YT player (placed behind UI but IN the viewport to prevent mobile throttling) -->
     <div id="yt-viewport-wrapper" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);">
       <div id="youtube-player"></div>
+      <div id="videoActionOverlay" class="video-action-overlay">
+        <div id="videoActionIcon" class="icon-circle"></div>
+      </div>
     </div>
 
     <!-- Inline Chat Area (moved outside fullscreen player for z-index layering above video) -->
