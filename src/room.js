@@ -1342,9 +1342,13 @@ function updateVideoPosition() {
       }
     }
   } else {
-    if (ytViewportWrapper) ytViewportWrapper.style.cssText = '';
+    if (ytViewportWrapper) {
+      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);';
+    }
     const ytPlayer = document.getElementById('youtube-player');
-    if (ytPlayer) ytPlayer.style.cssText = '';
+    if (ytPlayer) {
+      ytPlayer.style.cssText = 'position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;';
+    }
   }
 }
 window.addEventListener('resize', updateVideoPosition);
