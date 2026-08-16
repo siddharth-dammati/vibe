@@ -1458,14 +1458,10 @@ function updateVideoPosition() {
   } else {
     // Hidden mode (audio only background)
     if (ytViewportWrapper) {
-      // Make it full screen so the browser considers it fully "visible" and doesn't throttle background playback
-      ytViewportWrapper.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden;';
+      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);';
     }
-    if (dims) {
-      // Keep the physical dimensions so YouTube requests the correct resolution stream
-      ytPlayer.style.cssText = `position: absolute; top: 50%; left: 50%; width: ${dims.w}px; height: ${dims.h}px; opacity: 1; pointer-events: none; transform: translate(-50%, -50%); transform-origin: center center;`;
-    } else {
-      ytPlayer.style.cssText = 'position: absolute; top: 50%; left: 50%; width: 256px; height: 144px; opacity: 1; pointer-events: none; transform: translate(-50%, -50%); transform-origin: center center;';
+    if (ytPlayer) {
+      ytPlayer.style.cssText = 'position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;';
     }
   }
 }
