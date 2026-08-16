@@ -1458,14 +1458,14 @@ function updateVideoPosition() {
   } else {
     // Hidden mode (audio only background)
     if (ytViewportWrapper) {
-      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; width: 2px; height: 2px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden;';
+      // Make it full screen so the browser considers it fully "visible" and doesn't throttle background playback
+      ytViewportWrapper.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden;';
     }
     if (dims) {
-      // Force specific resolution in background by keeping the large layout footprint
-      ytPlayer.style.cssText = `position: absolute; top: 0; left: 0; width: ${dims.w}px; height: ${dims.h}px; opacity: 1; pointer-events: none; transform: scale(0.001); transform-origin: top left;`;
+      // Keep the physical dimensions so YouTube requests the correct resolution stream
+      ytPlayer.style.cssText = `position: absolute; top: 50%; left: 50%; width: ${dims.w}px; height: ${dims.h}px; opacity: 1; pointer-events: none; transform: translate(-50%, -50%); transform-origin: center center;`;
     } else {
-      // Auto in background defaults to tiny to save data
-      ytPlayer.style.cssText = 'position: absolute; top: 0; left: 0; width: 256px; height: 144px; opacity: 1; pointer-events: none; transform: scale(0.001); transform-origin: top left;';
+      ytPlayer.style.cssText = 'position: absolute; top: 50%; left: 50%; width: 256px; height: 144px; opacity: 1; pointer-events: none; transform: translate(-50%, -50%); transform-origin: center center;';
     }
   }
 }
