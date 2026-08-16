@@ -1465,16 +1465,14 @@ function updateVideoPosition() {
     ytPlayer.style.cssText = `position: absolute !important; top: 50% !important; left: 50% !important; width: ${w}px !important; height: ${h}px !important; transform: translate(-50%, -50%) scale(${scale}) !important; opacity: 1 !important; pointer-events: none !important; transform-origin: center center;`;
     
   } else {
-    // Hidden mode (audio only background)
-    // ULTIMATE HACK: YouTube pauses iframes that are occluded, opacity < 0.1, or out of viewport.
-    // Solution: Keep the iframe 200x200 (standard minimum size), place it on TOP of everything (z-index 9999),
-    // but shift it off-screen so only a 1x1 pixel edge is visible in the extreme top-left corner.
-    // This perfectly satisfies all of Chrome's and YouTube's visibility heuristics without disrupting the UI.
+    // Ambient Background Mode (audio only)
+    // By keeping the video full-screen behind a translucent frosted glass UI, 
+    // the browser considers it fully visible and NEVER throttles background playback!
     if (ytViewportWrapper) {
-      ytViewportWrapper.style.cssText = 'position: fixed !important; top: -199px !important; left: -199px !important; width: 200px !important; height: 200px !important; opacity: 1 !important; pointer-events: none !important; z-index: 9999 !important; overflow: hidden !important; transform: none !important; border-radius: 0 !important;';
+      ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; opacity: 1 !important; pointer-events: none !important; z-index: -2 !important; overflow: hidden !important; transform: none !important; border-radius: 0 !important;';
     }
     if (ytPlayer) {
-      ytPlayer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; width: 200px !important; height: 200px !important; opacity: 1 !important; pointer-events: none !important; transform: none !important;';
+      ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 120vw !important; height: 120vh !important; opacity: 1 !important; pointer-events: none !important; transform: translate(-50%, -50%) !important;';
     }
   }
 }

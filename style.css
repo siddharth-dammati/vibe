@@ -102,8 +102,8 @@
 html, body { height: 100%; }
 
 body {
-  font-family: var(--font);
-  background: var(--bg);
+    font-family: var(--font);
+    background: transparent;
   color: var(--t1);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -1336,9 +1336,9 @@ body.video-mode-active #yt-viewport-wrapper {
       /* ── HOME PAGE ─────────────────────────────────────────────────── */
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
       html,body{height:100%;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-      body{background:#F0F4FF;color:#0F0F1A;overflow-x:hidden}
+      body{background:transparent;color:#0F0F1A;overflow-x:hidden}
 
-      .home-bg{position:fixed;inset:0;z-index:-1;background:#F0F4FF;overflow:hidden;pointer-events:none}
+      .home-bg{position:fixed;inset:0;z-index:-1;background:rgba(240,244,255,0.7);backdrop-filter:blur(40px) saturate(1.5);-webkit-backdrop-filter:blur(40px) saturate(1.5);overflow:hidden;pointer-events:none}
       .home-bg::before{content:'';position:absolute;top:-20%;left:-10%;width:70vw;height:70vw;background:radial-gradient(circle,rgba(108,99,255,.12) 0%,transparent 70%);filter:blur(80px)}
       .home-bg::after{content:'';position:absolute;bottom:10%;right:-10%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(255,107,107,.09) 0%,transparent 70%);filter:blur(80px)}
 
