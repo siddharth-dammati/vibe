@@ -573,7 +573,17 @@ function onPlayerStateChange(event) {
 
   if (event.data == YT.PlayerState.PLAYING) {
     initSilentAudio();
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing';
+      // Registering metadata is often required by Chrome/iOS to respect background playback
+      if (queue[nowPlayingIndex]) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: queue[nowPlayingIndex].title,
+          artist: queue[nowPlayingIndex].artist || 'Vibe Room',
+          artwork: [{ src: queue[nowPlayingIndex].thumbnail || `https://i.ytimg.com/vi/${queue[nowPlayingIndex].videoId}/default.jpg`, sizes: '512x512', type: 'image/jpeg' }]
+        });
+      }
+    }
     
     if (playPauseBtn) playPauseBtn.innerHTML = UI_ICONS.pause;
     if (thumb) thumb.classList.remove('paused');
@@ -584,7 +594,9 @@ function onPlayerStateChange(event) {
   } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
     // Hack: If browser auto-paused the video because the tab went to background or any other reason, force it back!
     if (roomState && roomState.isPlaying) {
-      player.playVideo();
+      setTimeout(() => {
+        if (player.getPlayerState() !== YT.PlayerState.PLAYING) player.playVideo();
+      }, 50);
       return;
     }
 
@@ -630,12 +642,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     // Tab went to background. If we should be playing, force the YouTube API to stay playing
     if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      player.playVideo();
+      setTimeout(() => player.playVideo(), 50);
     }
   } else {
     // Tab came back to foreground. Force sync if it got paused somehow
     if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      player.playVideo();
+      setTimeout(() => player.playVideo(), 50);
     }
   }
 });
