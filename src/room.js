@@ -1222,21 +1222,21 @@ function updateFullscreenUI() {
   if (!song) return;
 
   const artUrl = `https://i.ytimg.com/vi/${song.videoId}/maxresdefault.jpg`;
-  fsArtwork.src = artUrl;
-  fsBgArt.style.backgroundImage = `url(${artUrl})`;
-  fsSongTitle.textContent = song.title;
-  fsSongArtist.textContent = song.artist;
+  if (fsArtwork) fsArtwork.src = artUrl;
+  if (fsBgArt) fsBgArt.style.backgroundImage = `url(${artUrl})`;
+  if (fsSongTitle) fsSongTitle.textContent = song.title;
+  if (fsSongArtist) fsSongArtist.textContent = song.artist;
 
   const fsRoomLabel = document.getElementById('fsRoomLabel');
   if (fsRoomLabel) fsRoomLabel.textContent = `ROOM ${currentRoom}`;
 
   // Sync play state
   if (roomState.isPlaying) {
-    fsPlayPauseBtn.textContent = '⏸';
-    fsArtwork.classList.add('playing');
+    if (fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    if (fsArtwork) fsArtwork.classList.add('playing');
   } else {
-    fsPlayPauseBtn.textContent = '▶';
-    fsArtwork.classList.remove('playing');
+    if (fsPlayPauseBtn) fsPlayPauseBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#0F0F1A"><path d="M5 3v18l15-9z"/></svg>`;
+    if (fsArtwork) fsArtwork.classList.remove('playing');
   }
 }
 
@@ -1291,12 +1291,25 @@ const ytViewportWrapper = document.getElementById('yt-viewport-wrapper');
 
 function updateVideoPosition() {
   if (document.body.classList.contains('video-mode-active') && isFullscreen) {
-    const artRect = fsArtwork.getBoundingClientRect();
-    if (artRect.height > 0 && ytViewportWrapper) {
-      ytViewportWrapper.style.top = (artRect.top + artRect.height / 2) + 'px';
+    if (fsArtwork) {
+      const artRect = fsArtwork.getBoundingClientRect();
+      if (artRect.height > 0 && ytViewportWrapper) {
+        ytViewportWrapper.style.top = (artRect.top + artRect.height / 2) + 'px';
+      }
+    } else {
+      // In new fullscreen UI, force full-bleed video via JS
+      if (ytViewportWrapper) {
+        ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; transform: none !important; z-index: 100 !important; opacity: 1 !important; pointer-events: none !important;';
+      }
+      const ytPlayer = document.getElementById('youtube-player');
+      if (ytPlayer) {
+        // Force iframe to be exactly 16:9 to prevent YouTube black bars, making it tall enough to cover the screen
+        ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 177.77vh !important; height: 100vh !important; transform: translate(-50%, -50%) !important;';
+      }
     }
   } else if (ytViewportWrapper) {
-    ytViewportWrapper.style.top = '50%';
+    // Revert to mini player sizing
+    ytViewportWrapper.style.cssText = '';
   }
 }
 window.addEventListener('resize', updateVideoPosition);
