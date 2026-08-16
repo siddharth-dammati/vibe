@@ -1466,11 +1466,15 @@ function updateVideoPosition() {
     
   } else {
     // Hidden mode (audio only background)
+    // ULTIMATE HACK: YouTube pauses iframes that are occluded, opacity < 0.1, or out of viewport.
+    // Solution: Keep the iframe 200x200 (standard minimum size), place it on TOP of everything (z-index 9999),
+    // but shift it off-screen so only a 1x1 pixel edge is visible in the extreme top-left corner.
+    // This perfectly satisfies all of Chrome's and YouTube's visibility heuristics without disrupting the UI.
     if (ytViewportWrapper) {
-      ytViewportWrapper.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; opacity: 0.001; pointer-events: none; z-index: -9999; overflow: hidden; border-radius: 12px; transition: top 0.3s var(--ease-out-expo);';
+      ytViewportWrapper.style.cssText = 'position: fixed !important; top: -199px !important; left: -199px !important; width: 200px !important; height: 200px !important; opacity: 1 !important; pointer-events: none !important; z-index: 9999 !important; overflow: hidden !important; transform: none !important; border-radius: 0 !important;';
     }
     if (ytPlayer) {
-      ytPlayer.style.cssText = 'position: absolute !important; top: -9999px !important; left: -9999px !important; width: 10px !important; height: 10px !important; opacity: 0 !important; pointer-events: none !important;';
+      ytPlayer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; width: 200px !important; height: 200px !important; opacity: 1 !important; pointer-events: none !important; transform: none !important;';
     }
   }
 }
