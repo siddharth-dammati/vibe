@@ -673,28 +673,7 @@ document.getElementById('playPauseBtn').addEventListener('click', () => {
 document.getElementById('nextBtn').addEventListener('click', playNext);
 
 // Aggressively prevent browser from pausing YouTube iframe when switching tabs
-let bgPlayInterval;
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    // Tab went to background.
-    // The browser pauses YouTube iframes asynchronously right AFTER visibilitychange.
-    // We forcefully ping playVideo to override this pause.
-    if (bgPlayInterval) clearInterval(bgPlayInterval);
-    bgPlayInterval = setInterval(() => {
-      if (isPlayerReady && roomState && roomState.isPlaying) {
-        if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
-          player.playVideo();
-        }
-      }
-    }, 500);
-  } else {
-    // Tab came back to foreground.
-    if (bgPlayInterval) clearInterval(bgPlayInterval);
-    if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      player.playVideo();
-    }
-  }
-});
+// Removed aggressive visibilitychange listener to prevent YouTube anti-spam triggers
 
 // prevBtn: go to beginning of current song or previous
 document.getElementById('prevBtn')?.addEventListener('click', () => {
@@ -1465,14 +1444,14 @@ function updateVideoPosition() {
     ytPlayer.style.cssText = `position: absolute !important; top: 50% !important; left: 50% !important; width: ${w}px !important; height: ${h}px !important; transform: translate(-50%, -50%) scale(${scale}) !important; opacity: 1 !important; pointer-events: none !important; transform-origin: center center;`;
     
   } else {
-    // Ambient Background Mode (audio only)
-    // By keeping the video full-screen behind a translucent frosted glass UI, 
-    // the browser considers it fully visible and NEVER throttles background playback!
+    // True Audio Mode: Prevent Instant Tab Pause
+    // We place a 10x10 pixel iframe at the absolute top layer (z-index 999999).
+    // It must have opacity 1 and be physically on the screen to pass all Chrome heuristics.
     if (ytViewportWrapper) {
-      ytViewportWrapper.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; opacity: 1 !important; pointer-events: none !important; z-index: -2 !important; overflow: hidden !important; transform: none !important; border-radius: 0 !important;';
+      ytViewportWrapper.style.cssText = 'position: fixed !important; bottom: 0 !important; right: 0 !important; width: 10px !important; height: 10px !important; opacity: 1 !important; pointer-events: none !important; z-index: 999999 !important; overflow: hidden !important; transform: none !important; border-radius: 0 !important;';
     }
     if (ytPlayer) {
-      ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 120vw !important; height: 120vh !important; opacity: 1 !important; pointer-events: none !important; transform: translate(-50%, -50%) !important;';
+      ytPlayer.style.cssText = 'position: absolute !important; top: 0 !important; left: 0 !important; width: 10px !important; height: 10px !important; opacity: 1 !important; pointer-events: none !important; transform: none !important;';
     }
   }
 }
