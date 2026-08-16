@@ -1612,12 +1612,12 @@ body.fullscreen-open #yt-viewport-wrapper {
 }
 
 body.fullscreen-open #youtube-player {
-  width: 100vw !important;
-  height: 56.25vw !important; 
   position: absolute !important;
   top: 50% !important;
   left: 50% !important;
-  transform: translate(-50%, -50%) scale(3.2) !important; /* Scale aggressively to crop 16:9 to 9:16 portrait */
+  width: 320vh !important;
+  height: 180vh !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Turn off old video mode bounds when fullscreen is open */
@@ -1625,5 +1625,7 @@ body.fullscreen-open.video-mode-active #yt-viewport-wrapper {
   width: 100vw !important; height: 100vh !important; max-width: none !important; max-height: none !important; top: 0 !important; left: 0 !important; transform: none !important; border-radius: 0 !important;
 }
 body.fullscreen-open.video-mode-active #youtube-player {
-  transform: translate(-50%, -50%) scale(3.2) !important;
+  width: 320vh !important;
+  height: 180vh !important;
+  transform: translate(-50%, -50%) !important;
 }
