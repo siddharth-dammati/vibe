@@ -1380,7 +1380,7 @@ body.video-mode-active #yt-viewport-wrapper {
   max-width: 600px !important;
   max-height: 450px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-  pointer-events: auto !important;
+  pointer-events: none !important;
   /* Top value will be overridden by JS to match artwork position, but fallback to 35% if JS fails */
   top: 35% !important; 
 }

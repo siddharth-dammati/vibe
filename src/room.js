@@ -543,6 +543,10 @@ function initYouTubePlayer() {
       'controls': 0,
       'fs': 0,
       'autoplay': 1,
+      'rel': 0,
+      'modestbranding': 1,
+      'disablekb': 1,
+      'iv_load_policy': 3,
       'origin': window.location.origin
     },
     events: {
