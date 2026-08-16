@@ -544,7 +544,7 @@ function initYouTubePlayer() {
     videoId: 'dQw4w9WgXcQ', // Dummy fallback
     playerVars: {
       'playsinline': 1,
-      'controls': 0,
+      'controls': 1, // Fix: YouTube pauses iframes on tab switch if controls are hidden!
       'fs': 0,
       'autoplay': 1,
       'rel': 0,
