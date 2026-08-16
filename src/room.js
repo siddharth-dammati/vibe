@@ -1158,11 +1158,11 @@ function openFullscreen() {
 function closeFullscreen() {
   isFullscreen = false;
   document.body.classList.remove('fullscreen-open');
+  document.body.classList.remove('video-mode-active');
   fullscreenPlayer.classList.remove('open');
   fsChatOverlay.classList.remove('open');
   if (fsQualityOverlay) fsQualityOverlay.classList.remove('open');
   document.body.classList.remove('chat-overlay-open');
-  if (fsToggleSong) fsToggleSong.click();
   stopFsProgressUpdater();
   updateVideoPosition();
 }
