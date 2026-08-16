@@ -1113,11 +1113,9 @@ const fsBgArt          = document.getElementById('fsBgArt');
 const fsSongTitle      = document.getElementById('fsSongTitle');
 const fsSongArtist     = document.getElementById('fsSongArtist');
 const fsPlayPauseBtn   = document.getElementById('fsPlayPauseBtn');
-const fsSkipBackBtn    = document.getElementById('fsSkipBackBtn');
-const fsSkipFwdBtn     = document.getElementById('fsSkipFwdBtn');
-const fsVolSlider      = document.getElementById('fsVolSlider');
-const fsVolValue       = document.getElementById('fsVolValue');
-const fsProgressFill   = document.getElementById('fsProgressFill');
+const fsPrevTrackBtn   = document.getElementById('fsPrevTrackBtn');
+const fsNextTrackBtn   = document.getElementById('fsNextTrackBtn');
+const fsProgressSlider = document.getElementById('fsProgressSlider');
 const fsCurrentTime    = document.getElementById('fsCurrentTime');
 const fsDuration       = document.getElementById('fsDuration');
 const fsLikeBtn        = document.getElementById('fsLikeBtn');
@@ -1149,12 +1147,8 @@ function openFullscreen() {
   // Force 9:16 background video mode on
   document.body.classList.add('video-mode-active');
 
-  // Sync volume slider
-  if (player && typeof player.getVolume === 'function') {
-    const vol = player.getVolume();
-    if (fsVolSlider) fsVolSlider.value = vol;
-    if (fsVolValue) fsVolValue.textContent = vol + '%';
-  }
+  // No volume syncing needed
+
 
   updateFullscreenUI();
   updateVideoPosition();
@@ -1179,33 +1173,28 @@ fsPlayPauseBtn.addEventListener('click', (e) => {
   document.getElementById('playPauseBtn').click();
 });
 
-if (fsSkipBackBtn) {
-  fsSkipBackBtn.addEventListener('click', (e) => {
+if (fsPrevTrackBtn) {
+  fsPrevTrackBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (player && player.getCurrentTime) {
-      player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
-    }
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) prevBtn.click();
   });
 }
 
-if (fsSkipFwdBtn) {
-  fsSkipFwdBtn.addEventListener('click', (e) => {
+if (fsNextTrackBtn) {
+  fsNextTrackBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (player && player.getCurrentTime && player.getDuration) {
-      player.seekTo(Math.min(player.getDuration(), player.getCurrentTime() + 10), true);
-    }
+    playNext();
   });
 }
 
-// Volume Slider
-if (fsVolSlider) {
-  fsVolSlider.addEventListener('input', (e) => {
-    const vol = e.target.value;
-    if (fsVolValue) fsVolValue.textContent = vol + '%';
-    if (player && typeof player.setVolume === 'function') {
-      player.setVolume(vol);
-      if (vol == 0) player.mute();
-      else player.unMute();
+// Progress Slider Seeking
+if (fsProgressSlider) {
+  fsProgressSlider.addEventListener('input', (e) => {
+    if (player && player.getDuration) {
+      const duration = player.getDuration();
+      const seekTime = (e.target.value / 100) * duration;
+      player.seekTo(seekTime, true);
     }
   });
 }
@@ -1251,9 +1240,11 @@ function startFsProgressUpdater() {
     const current  = player.getCurrentTime();
     if (!duration) return;
 
-    fsProgressFill.style.width = `${(current / duration) * 100}%`;
-    fsCurrentTime.textContent = formatTime(current);
-    fsDuration.textContent    = formatTime(duration);
+    if (fsProgressSlider && document.activeElement !== fsProgressSlider) {
+      fsProgressSlider.value = (current / duration) * 100;
+    }
+    if (fsCurrentTime) fsCurrentTime.textContent = formatTime(current);
+    if (fsDuration) fsDuration.textContent    = formatTime(duration);
   }, 500);
 }
 
