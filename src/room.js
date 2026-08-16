@@ -511,13 +511,15 @@ function initSilentAudio() {
       document.removeEventListener('touchstart', initSilentAudio);
     }).catch(e => console.log('Silent audio blocked', e));
 
-    // 2. Web Audio API hack
+    // 2. Web Audio API hack - use an inaudible high-frequency tone
+    // Chrome sometimes suspends AudioContexts that are completely silent (gain = 0)
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (AudioContext) {
       const ctx = new AudioContext();
       const osc = ctx.createOscillator();
+      osc.frequency.value = 20000; // 20kHz (inaudible to most humans)
       const gain = ctx.createGain();
-      gain.gain.value = 0; // completely silent
+      gain.gain.value = 0.01; // Not fully 0, just very quiet
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(0);
@@ -539,7 +541,9 @@ function initYouTubePlayer() {
     playerVars: {
       'playsinline': 1,
       'controls': 0,
-      'fs': 0
+      'fs': 0,
+      'autoplay': 1,
+      'origin': window.location.origin
     },
     events: {
       'onReady': onPlayerReady,
@@ -578,8 +582,8 @@ function onPlayerStateChange(event) {
     if (typeof fsArtwork !== 'undefined' && fsArtwork) fsArtwork.classList.add('playing');
     startProgressBar();
   } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.UNSTARTED) {
-    // Hack: If browser auto-paused the video because the tab went to background, force it back!
-    if (document.hidden && roomState.isPlaying) {
+    // Hack: If browser auto-paused the video because the tab went to background or any other reason, force it back!
+    if (roomState && roomState.isPlaying) {
       player.playVideo();
       return;
     }
