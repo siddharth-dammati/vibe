@@ -297,84 +297,136 @@
     <!-- Home Overlay (shown instead of navigating away, keeps music playing) -->
     <div id="homeOverlay" style="
       position: fixed; inset: 0; z-index: 300;
-      background: rgba(6,6,10,0.97);
-      backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+      background: #F0F4FF;
       display: flex; flex-direction: column;
       transform: translateY(100%); transition: transform 0.48s cubic-bezier(0.16,1,0.3,1);
       pointer-events: none; visibility: hidden;
     ">
-      <!-- Now Playing bar at top -->
+      <div class="home-bg" style="position:absolute;"></div>
+      
+      <!-- Now Playing bar at top (Mini player) -->
       <div id="homeNowPlayingBar" style="
+        position: sticky; top: 0;
         display: flex; align-items: center; gap: 12px;
         padding: 3.5rem 1.5rem 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.07);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(20px);
+        z-index: 10;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
       ">
         <button id="homeOverlayCloseBtn" style="
           width:34px; height:34px; border-radius:50%;
-          background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.12);
-          color:white; font-size:1.2rem; cursor:pointer;
+          background:white; border:1px solid rgba(0,0,0,0.08);
+          color:#0F0F1A; font-size:1.2rem; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         ">‹</button>
-        <img id="homeNpThumb" src="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;" />
+        <img id="homeNpThumb" src="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
         <div style="flex-grow:1; min-width:0;">
-          <div id="homeNpTitle" style="font-size:0.88rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-          <div id="homeNpArtist" style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Now Playing • Room <span id="homeNpRoom"></span></div>
+          <div id="homeNpTitle" style="font-size:0.88rem;font-weight:700;color:#0F0F1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+          <div id="homeNpArtist" style="font-size:0.75rem;color:#6B7280;">Now Playing • Room <span id="homeNpRoom"></span></div>
         </div>
         <button id="homeNpPlayPause" style="
-          width:38px;height:38px;border-radius:50%;background:white;color:#000;
+          width:38px;height:38px;border-radius:50%;background:#6C63FF;color:white;
           border:none;font-size:1rem;cursor:pointer;
           display:flex;align-items:center;justify-content:center;
+          box-shadow: 0 4px 12px rgba(108,99,255,0.3);
         ">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>
         </button>
       </div>
 
       <!-- Dashboard content -->
-      <div style="flex-grow:1; overflow-y:auto; padding:1.5rem 1.5rem 6rem;">
-        <div style="padding: 1.5rem 0 2rem;">
-          <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:0.6rem;">Back to</p>
-          <h2 style="font-size:2rem;font-weight:900;letter-spacing:-0.03em;">Home <span style="background:linear-gradient(135deg,#ff2d55,#7c3aed,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Dashboard</span></h2>
+      <div style="flex-grow:1; overflow-y:auto; padding-bottom:6rem; position:relative; z-index:5;">
+        <div class="discover-heading" style="padding-top: 1.5rem;">
+          <h1>Discover</h1>
+          <p id="overlayWelcomeText">Welcome back 👋</p>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:2.5rem;">
-          <button id="homeOverlayCreateBtn" style="
-            display:flex;align-items:center;gap:14px;padding:16px 18px;
-            border-radius:18px;border:1px solid rgba(255,255,255,0.1);
-            background:rgba(255,255,255,0.04);color:white;
-            font-family:inherit;cursor:pointer;text-align:left;width:100%;
-            transition:background 0.2s;
-          ">
-            <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#ff2d55);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
-            </div>
-            <div>
-              <div style="font-size:1rem;font-weight:700;margin-bottom:3px;">Create a New Room</div>
-              <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Start a fresh listening session</div>
-            </div>
-            <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:1.3rem;">›</span>
-          </button>
-          <button id="homeOverlayJoinBtn" style="
-            display:flex;align-items:center;gap:14px;padding:16px 18px;
-            border-radius:18px;border:1px solid rgba(255,255,255,0.1);
-            background:rgba(255,255,255,0.04);color:white;
-            font-family:inherit;cursor:pointer;text-align:left;width:100%;
-            transition:background 0.2s;
-          ">
-            <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-            </div>
-            <div>
-              <div style="font-size:1rem;font-weight:700;margin-bottom:3px;">Join a Different Room</div>
-              <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);">Enter a room code to switch</div>
-            </div>
-            <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:1.3rem;">›</span>
-          </button>
+        <!-- Search -->
+        <div class="search-row">
+          <div class="search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="overlaySearchInput" placeholder="Search songs, artists...">
+          </div>
         </div>
 
-        <div>
-          <h3 style="font-size:1.2rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:1rem;">Your Playlist</h3>
-          <div id="homeOverlayPlaylist" style="display:flex;flex-direction:column;"></div>
+        <!-- Vibes / Genres -->
+        <div class="section-block">
+          <p class="section-label">Vibes</p>
+          <div class="genre-chips">
+            <button class="genre-chip chip-purple"><span class="genre-chip-icon">🎸</span>Rock</button>
+            <button class="genre-chip chip-coral"><span class="genre-chip-icon">🔥</span>Trending</button>
+            <button class="genre-chip chip-teal"><span class="genre-chip-icon">🎶</span>Chill</button>
+            <button class="genre-chip chip-pink"><span class="genre-chip-icon">💃</span>Party</button>
+            <button class="genre-chip chip-amber"><span class="genre-chip-icon">🎤</span>Hip-Hop</button>
+          </div>
         </div>
+
+        <!-- Trending -->
+        <div class="section-block">
+          <div class="trending-header">
+            <p class="section-label" style="margin-bottom:0">Trending</p>
+          </div>
+          <div class="trending-scroll">
+            <div class="trending-card">
+              <img class="trending-card-img" src="https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg" alt="Shape of You">
+              <div class="trending-card-overlay">
+                <div class="trending-card-title">Shape of You</div>
+                <div class="trending-card-artist">Ed Sheeran</div>
+              </div>
+            </div>
+            <div class="trending-card">
+              <img class="trending-card-img" src="https://i.ytimg.com/vi/kTJczUoc26U/hqdefault.jpg" alt="Blinding Lights">
+              <div class="trending-card-overlay">
+                <div class="trending-card-title">Blinding Lights</div>
+                <div class="trending-card-artist">The Weeknd</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-block">
+          <p class="section-label">Quick Actions</p>
+          <div class="action-cards">
+            <button id="homeOverlayCreateBtn" class="action-card">
+              <div class="action-card-icon create">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+              </div>
+              <div class="action-card-text">
+                <strong>Create a New Room</strong>
+                <span>Start a fresh listening session</span>
+              </div>
+              <span class="action-card-arrow">›</span>
+            </button>
+            <button id="homeOverlayJoinBtn" class="action-card">
+              <div class="action-card-icon join">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+              </div>
+              <div class="action-card-text">
+                <strong>Join a Different Room</strong>
+                <span>Enter a room code to switch</span>
+              </div>
+              <span class="action-card-arrow">›</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Your Playlist -->
+        <div class="section-block" id="homePlaylistSection">
+          <div class="playlist-section-header">
+            <p class="section-label" style="margin-bottom:0">Your Playlist</p>
+          </div>
+          <div id="homeOverlayPlaylist" style="display:flex;flex-direction:column;">
+            <div class="empty-playlist">
+              <div class="empty-playlist-emoji">🎵</div>
+              <p>Your cloud playlist is empty.<br>Use search to save songs!</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 

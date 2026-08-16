@@ -807,6 +807,15 @@ addSongBtn.addEventListener('click', () => {
   setTimeout(() => searchInput.focus(), 100);
 });
 
+const overlaySearchInput = document.getElementById('overlaySearchInput');
+if (overlaySearchInput) {
+  overlaySearchInput.addEventListener('click', () => {
+    // Open the same search modal that's used for adding songs
+    searchModal.classList.remove('hidden');
+    setTimeout(() => searchInput.focus(), 100);
+  });
+}
+
 closeSearchModal.addEventListener('click', () => {
   searchModal.classList.add('hidden');
 });
@@ -1274,7 +1283,7 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
 
 // View transition animation
 function switchView(viewName) {
-  if (viewName === 'home') { window.location.href = '/'; return; }
+  if (viewName === 'home') { openHomeOverlay(); return; }
   if (viewName === 'search') {
     searchModal.classList.remove('hidden');
     setTimeout(() => document.getElementById('searchInput').focus(), 100);
@@ -1314,7 +1323,7 @@ const homeNpPlayPause   = document.getElementById('homeNpPlayPause');
 const homeOverlayPlaylist = document.getElementById('homeOverlayPlaylist');
 
 // back button in header
-document.getElementById('goHomeBtn')?.addEventListener('click', () => { window.location.href = '/'; });
+document.getElementById('goHomeBtn')?.addEventListener('click', openHomeOverlay);
 
 function openHomeOverlay() {
   homeOverlay.style.transform = 'translateY(0)';
@@ -1359,47 +1368,51 @@ function renderHomeOverlayPlaylist() {
   homeOverlayPlaylist.innerHTML = '';
 
   if (myPlaylist.length === 0) {
-    homeOverlayPlaylist.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:0.88rem;">Your playlist is empty.<br>Save songs from Search!</div>';
+    homeOverlayPlaylist.innerHTML = `
+      <div class="empty-playlist">
+        <div class="empty-playlist-emoji">🎵</div>
+        <p>Your cloud playlist is empty.<br>Use search to save songs!</p>
+      </div>`;
     return;
   }
 
   myPlaylist.forEach(song => {
     const card = document.createElement('div');
-    card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px;border-radius:12px;';
-
-    const thumb = document.createElement('img');
-    thumb.src = song.thumbnail || `https://i.ytimg.com/vi/${song.videoId}/default.jpg`;
-    thumb.style.cssText = 'width:46px;height:46px;border-radius:6px;object-fit:cover;flex-shrink:0;';
-
-    const info = document.createElement('div');
-    info.style.cssText = 'flex-grow:1;min-width:0;';
-    info.innerHTML = `
-      <div style="font-size:0.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${song.title}</div>
-      <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:2px;">${song.artist}</div>
+    card.className = 'home-song-card';
+    
+    card.innerHTML = `
+      <img src="${song.thumbnail || `https://i.ytimg.com/vi/${song.videoId}/default.jpg`}" class="home-song-thumb" alt="Thumbnail">
+      <div class="home-song-info">
+        <div class="home-song-title" style="color: #0F0F1A;">${song.title}</div>
+        <div class="home-song-artist" style="color: #6B7280;">${song.artist || ''}</div>
+      </div>
+      <button class="btn btn-secondary btn-xs add-from-playlist-btn" style="border-radius:99px; background: rgba(108,99,255,0.1); color: #6C63FF; border: none;">＋ Queue</button>
     `;
 
-    const addBtn = document.createElement('button');
-    addBtn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;">${UI_ICONS.plus} Queue</span>`;
-    addBtn.style.cssText = 'padding:7px 13px;border-radius:999px;background:white;color:#000;border:none;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;';
+    const addBtn = card.querySelector('.add-from-playlist-btn');
     addBtn.addEventListener('click', () => {
-      addToQueueAndPlay({ videoId: song.videoId, title: song.title, artist: song.artist });
-      addBtn.innerHTML = `<span style="display:flex;align-items:center;gap:4px;">${UI_ICONS.check} Added</span>`;
-      addBtn.style.background = 'rgba(132,204,22,0.85)';
-      // Close overlay and go to queue
+      addToQueueAndPlay(song);
+      
+      // visual feedback
+      addBtn.textContent = 'Queued ✓';
+      addBtn.style.background = '#10B981';
+      addBtn.style.color = 'white';
+      setTimeout(() => {
+        addBtn.textContent = '＋ Queue';
+        addBtn.style.background = 'rgba(108,99,255,0.1)';
+        addBtn.style.color = '#6C63FF';
+      }, 2000);
+      
       closeHomeOverlay();
-      switchView('queue');
     });
 
-    card.appendChild(thumb);
-    card.appendChild(info);
-    card.appendChild(addBtn);
     homeOverlayPlaylist.appendChild(card);
   });
 }
 
 // Home overlay — Create Room
 document.getElementById('homeOverlayCreateBtn')?.addEventListener('click', () => {
-  const code = Math.random().toString(36).substring(2, 7).toUpperCase();
+  const code = generateRoomCode();
   window.location.href = `/src/room.html?room=${code}&host=true`;
 });
 
@@ -1413,7 +1426,6 @@ document.getElementById('homeOverlayJoinBtn')?.addEventListener('click', () => {
   homeJoinModal.style.opacity = '1';
   homeJoinModal.style.pointerEvents = 'all';
   homeJoinModal.style.visibility = 'visible';
-  setTimeout(() => homeJoinCodeInput?.focus(), 300);
 });
 
 homeJoinCancelBtn?.addEventListener('click', () => {
@@ -1423,7 +1435,7 @@ homeJoinCancelBtn?.addEventListener('click', () => {
 });
 
 homeJoinSubmitBtn?.addEventListener('click', () => {
-  const code = homeJoinCodeInput?.value.trim().toUpperCase();
+  const code = homeJoinCodeInput.value.trim().toUpperCase();
   if (code) {
     window.location.href = `/src/room.html?room=${code}`;
   } else {
