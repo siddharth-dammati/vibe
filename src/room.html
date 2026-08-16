@@ -211,15 +211,21 @@
         <div class="player-info">
           <div class="song-title" id="playerTitle">Not Playing</div>
           <div class="song-artist" id="playerArtist">Add a song to start</div>
+          <div class="waveform-bars" id="waveformBars">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
         </div>
         <div class="player-controls">
-          <button class="ctrl-btn" id="prevBtn" style="font-size:1.1rem;">
+          <button class="ctrl-btn" id="prevBtn" aria-label="Previous">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
           </button>
-          <button class="ctrl-btn play-pause-btn" id="playPauseBtn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>
+          <button class="ctrl-btn play-pause-btn" id="playPauseBtn" aria-label="Play / Pause">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18l15-9z"/></svg>
           </button>
-          <button class="ctrl-btn" id="nextBtn" style="font-size:1.1rem;">
+          <button class="ctrl-btn" id="nextBtn" aria-label="Next">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
           </button>
         </div>
