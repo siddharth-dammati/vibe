@@ -1701,3 +1701,4 @@ body.video-mode-active #yt-viewport-wrapper {
       @keyframes fadeIn{from{opacity:0}to{opacity:1}}
       @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
       .hidden{display:none!important}
+body.home-overlay-open #yt-viewport-wrapper { opacity: 0.001 !important; pointer-events: none !important; z-index: 9999 !important; }

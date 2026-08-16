@@ -145,7 +145,8 @@ function syncPlayerState() {
         player.seekTo(targetTime, true);
       }
       
-      if (!document.hidden && player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) {
+      // We MUST force playVideo even if hidden, otherwise the browser will permanently pause it
+      if (player.getPlayerState() !== YT.PlayerState.PLAYING && player.getPlayerState() !== YT.PlayerState.BUFFERING) {
         player.playVideo();
       }
     } else {
@@ -619,6 +620,21 @@ document.getElementById('playPauseBtn').addEventListener('click', () => {
 });
 
 document.getElementById('nextBtn').addEventListener('click', playNext);
+
+// Aggressively prevent browser from pausing YouTube iframe when switching tabs
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Tab went to background. If we should be playing, force the YouTube API to stay playing
+    if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+      player.playVideo();
+    }
+  } else {
+    // Tab came back to foreground. Force sync if it got paused somehow
+    if (isPlayerReady && roomState && roomState.isPlaying && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+      player.playVideo();
+    }
+  }
+});
 
 // prevBtn: go to beginning of current song or previous
 document.getElementById('prevBtn')?.addEventListener('click', () => {
@@ -1331,6 +1347,7 @@ function openHomeOverlay() {
   homeOverlay.style.transform = 'translateY(0)';
   homeOverlay.style.pointerEvents = 'all';
   homeOverlay.style.visibility = 'visible';
+  document.body.classList.add('home-overlay-open');
 
   // Populate now-playing bar
   const song = queue[nowPlayingIndex];
@@ -1349,6 +1366,7 @@ function closeHomeOverlay() {
   homeOverlay.style.transform = 'translateY(100%)';
   homeOverlay.style.pointerEvents = 'none';
   homeOverlay.style.visibility = 'hidden';
+  document.body.classList.remove('home-overlay-open');
 }
 
 homeOverlayClose?.addEventListener('click', closeHomeOverlay);
