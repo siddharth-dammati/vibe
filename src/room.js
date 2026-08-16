@@ -1303,8 +1303,10 @@ function updateVideoPosition() {
       }
       const ytPlayer = document.getElementById('youtube-player');
       if (ytPlayer) {
-        // Force iframe to be exactly 16:9 to prevent YouTube black bars, making it tall enough to cover the screen
-        ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 177.77vh !important; height: 100vh !important; transform: translate(-50%, -50%) !important;';
+        // Force iframe to be exactly 16:9. By making the height massively larger than 100vh (180vh),
+        // we guarantee that even music videos with baked-in cinematic black bars are fully cropped out,
+        // and the actual video content fills every corner of the screen.
+        ytPlayer.style.cssText = 'position: absolute !important; top: 50% !important; left: 50% !important; width: 320vh !important; height: 180vh !important; transform: translate(-50%, -50%) !important;';
       }
     }
   } else if (ytViewportWrapper) {
